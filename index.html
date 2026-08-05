@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pocket Python</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0d13">
+<style>
+:root{
+  --ink:#0a0d13; --surface:#111722; --raised:#18202e; --hair:#232d3e; --hair2:#313e54;
+  --txt:#dae1ef; --mute:#7a8699; --dim:#586377;
+  --blue:#4d8df6; --yellow:#f5c518; --green:#63e0a0; --red:#ff7b7b; --purple:#c69cf8;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --fs:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--txt);font:13px/1.45 var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit;background:none;border:0}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#283243;border-radius:10px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+.eyebrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute);font-weight:700}
+
+#app{display:flex;flex-direction:column;height:100%}
+
+/* top bar */
+#bar{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:8px 12px;
+  padding-top:calc(8px + env(safe-area-inset-top));background:#121926;border-bottom:1px solid var(--hair)}
+#mark{width:24px;height:24px;border-radius:6px;background:var(--yellow);color:#12161f;font:700 11px/24px var(--mono);text-align:center}
+#title{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;padding:3px 6px;border-radius:6px;text-align:left}
+#title:hover{background:var(--raised)}
+#title b{font:500 13px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#title i{font-style:normal;font-size:11px;color:var(--dim)}
+.tb{height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--hair);background:var(--raised);
+  font-size:12px;color:var(--mute);white-space:nowrap}
+.tb:hover{background:#232e42;color:var(--txt)}
+.tb.on{color:var(--blue);border-color:#2e4b78;background:#16233a}
+#run{height:28px;padding:0 14px;border-radius:7px;background:var(--yellow);color:#14181f;font-weight:650;font-size:12px}
+#run:hover{background:#ffd83f}
+#run[disabled]{opacity:.5}
+#stop{height:28px;padding:0 12px;border-radius:7px;border:1px solid #5a2b2b;background:#2a1719;color:var(--red);font-size:12px;display:none}
+#stop.on{display:block}
+
+/* layout */
+#main{flex:1;display:flex;min-height:0}
+#rail{width:240px;flex:0 0 240px;background:var(--surface);border-right:1px solid var(--hair);
+  display:flex;flex-direction:column;min-height:0}
+#rail.hide{display:none}
+#tabs{display:flex;gap:2px;padding:8px 8px 0}
+#tabs button{flex:1;padding:6px 4px;border-radius:6px 6px 0 0;font-size:10px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid transparent}
+#tabs button.on{color:var(--txt);background:var(--raised);border-bottom-color:var(--yellow)}
+.pane{flex:1;overflow:auto;display:none}
+.pane.on{display:block}
+.hint{padding:12px 13px;color:var(--dim);font-size:11.5px;line-height:1.65}
+.hint code{color:var(--mute);font-family:var(--mono)}
+.hint a{color:var(--blue)}
+.hint b{color:var(--mute);font-weight:600}
+.ghbtn{font:11px var(--mono);color:#525d70;padding:1px 6px;border-radius:5px;border:1px solid transparent}
+.ghbtn:hover{border-color:var(--hair);color:var(--txt)}
+.ghbtn.in{color:var(--green)}
+.row{display:flex;align-items:center;gap:6px;padding:7px 10px;border-left:2px solid transparent}
+.row:hover{background:var(--raised)}
+.row .nm{flex:1;min-width:0;font:12.5px var(--mono);color:var(--mute);text-align:left;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.on{background:var(--raised);border-left-color:var(--blue)}
+.row.on .nm{color:var(--txt)}
+.row.here .nm{color:var(--yellow)}
+.foot .tb{padding:0 2px;font-size:11px}
+.row .sz{font:10.5px var(--mono);color:#4d5769}
+.row .ic{padding:1px 5px;border-radius:4px;color:#4d5769;font-size:13px;line-height:1.3}
+.row .ic:hover{background:#33405a;color:var(--txt)}
+.foot{display:flex;gap:5px;padding:7px;border-top:1px solid var(--hair);flex:0 0 auto}
+.foot .tb{flex:1;text-align:center;padding:0 4px}
+#pkgbox{display:flex;gap:5px;padding:9px 10px}
+#pkgbox input{flex:1;min-width:0;padding:6px 8px;border-radius:6px;background:var(--ink);border:1px solid var(--hair);font:12px var(--mono)}
+.chip{display:inline-flex;align-items:center;gap:4px;margin:2px;padding:3px 8px;border-radius:16px;
+  background:var(--raised);border:1px solid var(--hair);font:10.5px var(--mono);color:var(--mute)}
+.chip.pip{border-color:#2c4a3a;color:var(--green)}
+.chip .ic{padding:0 2px;font-size:12px;color:#4d5769}
+.chip .ic:hover{color:var(--red);background:none}
+
+/* editor */
+#edit{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+#pane{position:relative;flex:1;display:flex;min-height:0;overflow:hidden;background:var(--ink)}
+#gutter{flex:0 0 auto;padding:12px 10px 30vh 12px;text-align:right;white-space:pre;
+  font:var(--fs)/1.55 var(--mono);color:#394356;user-select:none;overflow:hidden;border-right:1px solid #151c27}
+#scroll{position:relative;flex:1;overflow:auto}
+#hi,#code{margin:0;padding:12px 20px 30vh 10px;border:0;font:var(--fs)/1.55 var(--mono);white-space:pre;tab-size:4}
+#hi{position:absolute;top:0;left:0;min-width:100%;pointer-events:none;color:var(--txt)}
+#code{position:relative;display:block;min-width:100%;background:transparent;color:transparent;
+  -webkit-text-fill-color:transparent;caret-color:var(--yellow);resize:none;outline:none;overflow:hidden}
+#code::selection{background:rgba(77,141,246,.3)}
+.k{color:var(--yellow)}.s{color:var(--green)}.c{color:#4e5a72;font-style:italic}
+.n{color:var(--purple)}.b{color:var(--blue)}.d{color:#ffa26b}
+
+#find{display:none;align-items:center;gap:5px;padding:6px 8px;background:var(--surface);border-bottom:1px solid var(--hair)}
+#find.on{display:flex}
+#find input{flex:1;min-width:0;padding:5px 8px;border-radius:6px;background:var(--ink);border:1px solid var(--hair);font:12px var(--mono)}
+#find #findN{font:11px var(--mono);color:var(--dim);min-width:44px;text-align:center}
+#find .tb{height:26px;padding:0 8px}
+
+#pvFrame{display:block}
+
+/* terminal */
+#term{flex:0 0 auto;height:36%;min-height:80px;display:flex;flex-direction:column;
+  background:#0c1119;border-top:1px solid var(--hair)}
+#term.hide{display:none}
+#grip{height:9px;flex:0 0 auto;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}
+#grip::after{content:"";width:34px;height:3px;border-radius:3px;background:var(--hair2)}
+#tbar{display:flex;align-items:center;gap:8px;padding:0 12px 6px}
+#lamp{width:6px;height:6px;border-radius:50%;background:#3d485c;flex:0 0 auto}
+#lamp.busy{background:var(--yellow)}#lamp.good{background:var(--green)}#lamp.bad{background:var(--red)}
+#tbody{flex:1;overflow:auto;padding:0 12px 8px;font:12.5px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word}
+#tbody img{max-width:100%;border-radius:6px;margin:6px 0;background:#fff}
+#tline{display:flex;align-items:baseline;gap:7px;padding:6px 12px 10px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid #161e2b}
+#ps{font:12.5px var(--mono);color:var(--yellow);flex:0 0 auto}
+#tin{flex:1;min-width:0;font:12.5px var(--mono);color:var(--txt);outline:none;caret-color:var(--yellow)}
+.err{color:var(--red)}.ok{color:var(--green)}.sys{color:#586377}.echo{color:var(--mute)}
+.res{color:var(--purple)}
+
+/* status */
+#status{flex:0 0 auto;display:flex;align-items:center;gap:16px;padding:4px 12px;
+  background:#0c1119;border-top:1px solid var(--hair);font:11px var(--mono);color:#525d70}
+#status .grow{flex:1}
+
+/* modals */
+.veil{position:fixed;inset:0;background:rgba(5,7,11,.75);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
+.veil.on{display:flex}
+.card{width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;background:var(--surface);
+  border:1px solid var(--hair2);border-radius:12px;box-shadow:0 22px 56px rgba(0,0,0,.6);overflow:hidden}
+.card header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hair)}
+.card header h3{flex:1;margin:0;font:500 12.5px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .body{padding:14px;overflow:auto}
+.card .body pre{margin:0;font:12px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word;color:#c3cbdb}
+.card .body img{max-width:100%;border-radius:6px;background:#fff}
+.card footer{display:flex;gap:7px;padding:11px 14px;border-top:1px solid var(--hair)}
+.card footer .tb{flex:1;text-align:center;height:34px}
+.card footer .go{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.fld{width:100%;padding:10px;border-radius:8px;background:var(--ink);border:1px solid var(--hair2);font:14px var(--mono);color:var(--txt)}
+textarea.fld{min-height:110px;resize:vertical;line-height:1.5}
+
+@media (max-width:820px){#rail{position:absolute;z-index:20;top:0;bottom:0;left:0;box-shadow:12px 0 30px rgba(0,0,0,.5)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="bar">
+    <button class="tb on" id="tRail" title="Sidebar (Cmd/Ctrl+B)">Files</button>
+    <div id="mark">py</div>
+    <button id="title"><b id="fname">main.py</b><i id="dirty"></i></button>
+    <button class="tb" id="prev" title="Preview" style="display:none">Preview</button>
+    <button class="tb on" id="tTerm" title="Terminal (Cmd/Ctrl+J)">Terminal</button>
+    <button id="stop">Stop</button>
+    <button id="run">Run</button>
+  </div>
+
+  <div id="main">
+    <aside id="rail">
+      <div id="tabs">
+        <button data-p="files" class="on">Files</button>
+        <button data-p="work">Workspace</button>
+        <button data-p="pkgs">Packages</button>
+      </div>
+
+      <div class="pane on" id="p-files"><div id="filelist"></div></div>
+
+      <div class="pane" id="p-work">
+        <div style="display:flex;gap:5px;padding:9px 10px 4px">
+          <button class="tb" id="clonebtn" style="flex:1;height:28px">Clone</button>
+          <button class="tb" id="pubbtn" style="flex:1;height:28px">Publish</button>
+        </div>
+        <div class="hint">Python's disk. Anything your code writes shows up here and survives a reload.</div>
+        <div id="worklist"></div>
+      </div>
+
+      <div class="pane" id="p-pkgs">
+        <div id="pkgbox">
+          <input id="pkgname" placeholder="package" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="tb" id="pkgadd">Install</button>
+        </div>
+        <div style="padding:0 10px 8px"><button class="tb" id="whladd" style="width:100%;height:28px">Add a .whl file</button></div>
+        <div class="hint" style="padding-top:0">Imports install themselves on run. Drop a wheel anywhere on the window to install it, or point <code>pip install</code> at a url or a workspace path. Installed packages come back next session.</div>
+        <div id="pkgwrap" style="padding:4px 8px"></div>
+      </div>
+
+      <div class="foot" id="footFiles">
+        <button class="tb" id="newf">New</button>
+        <button class="tb" id="newdir">Folder</button>
+        <button class="tb" id="impf">Import</button>
+        <button class="tb" id="dlf">Export</button>
+      </div>
+      <div class="foot" id="footWork" style="display:none">
+        <button class="tb" id="refresh">Refresh</button>
+        <button class="tb" id="zipall">Download all</button>
+        <button class="tb" id="wipe">Clear</button>
+      </div>
+    </aside>
+
+    <div id="edit">
+      <div id="find">
+        <input id="findI" placeholder="find" spellcheck="false" autocapitalize="off">
+        <input id="replI" placeholder="replace" spellcheck="false" autocapitalize="off">
+        <span id="findN">0</span>
+        <button class="tb" id="findP">‹</button>
+        <button class="tb" id="findNx">›</button>
+        <button class="tb" id="findR">Replace</button>
+        <button class="tb" id="findA">All</button>
+        <button class="tb" id="findX">✕</button>
+      </div>
+      <div id="pane">
+        <div id="gutter">1</div>
+        <div id="scroll">
+          <pre id="hi" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+        </div>
+      </div>
+
+      <div id="term">
+        <div id="grip"></div>
+        <div id="tbar">
+          <div id="lamp"></div>
+          <div class="eyebrow" style="flex:1">Terminal</div>
+          <button class="tb" id="tclr">Clear</button>
+        </div>
+        <div id="tbody"></div>
+        <div id="tline">
+          <span id="ps">~ $</span>
+          <input id="tin" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="status">
+    <span id="stPos">Ln 1, Col 1</span>
+    <span id="stSize"></span>
+    <span class="grow"></span>
+    <span id="stCwd"></span>
+    <button id="stGh" class="ghbtn">sign in</button>
+    <span id="stPy">starting</span>
+  </div>
+</div>
+
+<div class="veil" id="askVeil"><div class="card" style="max-width:340px">
+  <header><h3 id="askT">Name</h3></header>
+  <div class="body"><input id="askI" class="fld" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+  <footer><button class="tb" id="askC">Cancel</button><button class="tb go" id="askG">Save</button></footer>
+</div></div>
+
+<div class="veil" id="stdinVeil"><div class="card" style="max-width:400px">
+  <header><h3>This script calls input()</h3></header>
+  <div class="body">
+    <div class="hint" style="padding:0 0 10px">One line per input() call. Leave it empty to send end of file.</div>
+    <textarea id="stdinI" class="fld" spellcheck="false"></textarea>
+  </div>
+  <footer><button class="tb" id="stdinC">Cancel</button><button class="tb go" id="stdinG">Run</button></footer>
+</div></div>
+
+<div class="veil" id="authVeil"><div class="card" style="max-width:390px">
+  <header><h3>Sign in to GitHub</h3></header>
+  <div class="body">
+    <div class="hint" style="padding:0 0 10px">Paste a personal access token. It stays in this browser, never prints to the terminal, and is kept out of your command history.</div>
+    <input id="authI" class="fld" type="password" placeholder="github_pat_… or ghp_…" autocomplete="off" spellcheck="false">
+    <div id="authErr" class="hint" style="padding:9px 0 0;color:var(--red);display:none"></div>
+    <div class="hint" style="padding:11px 0 0">Give it <b>Contents: read and write</b>. Add <b>Administration: read and write</b> if you want to create repos. <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">Make one on GitHub</a></div>
+  </div>
+  <footer><button class="tb" id="authC">Cancel</button><button class="tb go" id="authG">Sign in</button></footer>
+</div></div>
+
+<div class="veil" id="pvVeil"><div class="card" style="max-width:900px;max-height:90vh;height:90vh">
+  <header><h3 id="pvT">preview</h3><button class="tb" id="pvOpen">Full screen</button><button class="tb" id="pvX">Close</button></header>
+  <iframe id="pvFrame" sandbox="allow-scripts allow-modals allow-popups allow-forms"
+    style="flex:1;width:100%;border:0;background:#0f1420"></iframe>
+</div></div>
+
+<div class="veil" id="viewVeil"><div class="card">
+  <header><h3 id="viewT">file</h3><button class="tb" id="viewX">Close</button></header>
+  <div class="body" id="viewB"></div>
+  <footer>
+    <button class="tb" id="viewPv" style="display:none">Preview</button>
+    <button class="tb" id="viewCopy">Copy to editor</button>
+    <button class="tb go" id="viewDl">Download</button>
+  </footer>
+</div></div>
+
+<input type="file" id="picker" accept=".py,.txt,.csv,.json,.md" style="display:none">
+<input type="file" id="whlpick" accept=".whl" multiple style="display:none">
+
+
+<script id="workerSrc" type="text/js-worker">
+"use strict";
+let py=null, cons=null, cwd="/home/pyodide", stdinQ=[], booting=false;
+const HOME="/home/pyodide";
+let CDNS=["https://cdn.jsdelivr.net/pyodide/v0.26.4/full/","https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.26.4/"];
+
+function post(m,t){ t&&t.length ? self.postMessage(m,t) : self.postMessage(m); }
+function out(text,stream){ post({type:"out",text:text,stream:stream||"out"}); }
+
+function b64(u8){
+  let s="",CH=0x8000;
+  for(let i=0;i<u8.length;i+=CH) s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));
+  return btoa(s);
+}
+function unb64(str){
+  const bin=atob(str), u=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  return u;
+}
+function abs(p){
+  if(!p) return cwd;
+  if(p[0]==="/") return p;
+  if(p==="~") return HOME;
+  if(p.indexOf("~/")===0) return HOME+"/"+p.slice(2);
+  const parts=(cwd+"/"+p).split("/"), stack=[];
+  for(const s of parts){ if(!s||s===".") continue; if(s===".."){ stack.pop(); continue; } stack.push(s); }
+  return "/"+stack.join("/");
+}
+
+async function boot(){
+  if(py||booting) return;
+  booting=true;
+  out("loading python runtime...","sys");
+  let last=null;
+  if(self.LOCALBASE) CDNS=[self.LOCALBASE].concat(CDNS);
+  let usedBase="";
+  for(const url of CDNS){
+    try{ importScripts(url+"pyodide.js"); py=await loadPyodide({indexURL:url}); usedBase=url; break; }
+    catch(e){ last=e; }
+  }
+  self.USEDBASE=usedBase;
+  if(!py){
+    booting=false;
+    post({type:"boot",ok:false,error:String(last&&last.message||last),offline:!self.navigator.onLine});
+    return;
+  }
+  out("runtime: "+(usedBase===self.LOCALBASE?"local folder":"cdn")+"\n","sys");
+  py.setStdout({batched:s=>out(s,"out")});
+  py.setStderr({batched:s=>out(s,"err")});
+  py.setStdin({stdin:()=>{
+    if(!stdinQ.length) return null;
+    const line=stdinQ.shift();
+    out(line+"\n","echo");
+    return line+"\n";
+  }});
+  await py.runPythonAsync(
+    "import os, sys\n"+
+    "os.environ['MPLBACKEND']='AGG'\n"+
+    "os.makedirs('"+HOME+"', exist_ok=True)\n"+
+    "os.chdir('"+HOME+"')\n"+
+    "sys.path.insert(0,'"+HOME+"')\n"
+  );
+  try{ await needMicropip(); }
+  catch(e){ out("warning: micropip failed to load, pypi installs will not work\n","err"); }
+  const mod=py.pyimport("pyodide.console");
+  cons=mod.PyodideConsole(py.globals);
+  cons.stdout_callback=s=>out(s,"out");
+  cons.stderr_callback=s=>out(s,"err");
+  booting=false;
+  post({type:"boot",ok:true,version:py.version});
+}
+
+
+
+/* ---------- environments ---------- */
+let envs={}, activeEnv="";
+const ENVROOT="/envs";
+
+const PURGE =
+  "import sys, importlib\n" +
+  "for _k,_v in list(sys.modules.items()):\n" +
+  "    _f=getattr(_v,'__file__',None)\n" +
+  "    if _f and str(_f).startswith('/envs/'):\n" +
+  "        sys.modules.pop(_k,None)\n" +
+  "sys.path=[_p for _p in sys.path if not _p.startswith('/envs/')]\n" +
+  "importlib.invalidate_caches()\n";
+
+async function envPath(name){
+  await py.runPythonAsync(PURGE + (name ? "sys.path.insert(0,'/envs/"+name+"')\n" : ""));
+}
+
+async function relocate(pkg,name){
+  const code =
+    "import os, glob, shutil, sysconfig, json\n" +
+    "_sp = sysconfig.get_path('purelib')\n" +
+    "_t  = '/envs/"+name+"'\n" +
+    "_pk = "+JSON.stringify(pkg.replace(/[<>=!].*$/,"").trim())+"\n" +
+    "_moved = 0\n" +
+    "for _di in glob.glob(os.path.join(_sp, _pk.replace('-','_')+'-*.dist-info')) + glob.glob(os.path.join(_sp, _pk+'-*.dist-info')):\n" +
+    "    _rec = os.path.join(_di,'RECORD')\n" +
+    "    _paths = []\n" +
+    "    if os.path.exists(_rec):\n" +
+    "        for _line in open(_rec):\n" +
+    "            _p = _line.split(',')[0].strip()\n" +
+    "            if _p and not _p.startswith('..'): _paths.append(_p)\n" +
+    "    for _p in _paths:\n" +
+    "        _s = os.path.join(_sp,_p); _d = os.path.join(_t,_p)\n" +
+    "        if not os.path.exists(_s): continue\n" +
+    "        os.makedirs(os.path.dirname(_d), exist_ok=True)\n" +
+    "        try:\n" +
+    "            shutil.move(_s,_d); _moved += 1\n" +
+    "        except Exception: pass\n" +
+    "json.dumps({'moved':_moved})\n";
+  try{ return JSON.parse(await py.runPythonAsync(code)); }
+  catch(e){ return {moved:0,error:String(e.message||e)}; }
+}
+
+async function venvCmd(a){
+  const sub=(a.sub||"list").toLowerCase(), argv=a.argv||[], token=a.token||"";
+  const L=[]; const say=(t,c)=>L.push({t:t,c:c||""});
+  const back=()=>({lines:L,envs:envs,active:activeEnv,dirty:true});
+  try{ py.FS.mkdirTree(ENVROOT); }catch(e){}
+
+  if(sub==="list"||sub==="ls"){
+    const names=Object.keys(envs);
+    if(!names.length){ say("no environments. make one: venv create <name>","sys"); return {lines:L}; }
+    names.forEach(n=>say((n===activeEnv?"* ":"  ")+n+"   "+(envs[n].packages.length)+" package"+(envs[n].packages.length===1?"":"s"), n===activeEnv?"ok":""));
+    return {lines:L};
+  }
+
+  if(sub==="create"||sub==="new"){
+    const n=argv[0]; if(!n) throw new Error("usage: venv create <name>");
+    if(!/^[A-Za-z0-9._-]{1,64}$/.test(n)) throw new Error("env names can use letters, numbers, dot, dash and underscore only");
+    try{ py.FS.mkdirTree(ENVROOT+"/"+n); }catch(e){}
+    if(!envs[n]) envs[n]={packages:[]};
+    activeEnv=n; await envPath(n);
+    say("created "+n+" and switched to it","ok");
+    return back();
+  }
+
+  if(sub==="use"||sub==="activate"){
+    const n=argv[0];
+    if(!/^[A-Za-z0-9._-]{1,64}$/.test(n||"")) throw new Error("bad env name");
+    if(!envs[n]) throw new Error("no env named "+n+". venv create "+n);
+    try{ py.FS.mkdirTree(ENVROOT+"/"+n); }catch(e){}
+    activeEnv=n; await envPath(n);
+    const want=envs[n].packages.slice();
+    const have=JSON.parse(await py.runPythonAsync(
+      "import os, glob, json\n" +
+      "json.dumps([os.path.basename(_d).split('-')[0] for _d in glob.glob('/envs/"+n+"/*.dist-info')])"));
+    const missing=want.filter(w=>have.indexOf(w.replace(/[<>=!].*$/,"").replace(/-/g,"_"))<0 && have.indexOf(w.replace(/[<>=!].*$/,""))<0);
+    if(missing.length){
+      say("restoring "+missing.length+" package"+(missing.length===1?"":"s")+"...","sys");
+      for(const m of missing){
+        try{
+          await installOne(m);
+          await relocate(m,n);
+        }catch(e){ say("could not restore "+m+": "+whyFailed(e),"err"); }
+      }
+      await envPath(n);
+    }
+    say("active env: "+n,"ok");
+    return back();
+  }
+
+  if(sub==="deactivate"||sub==="off"){
+    activeEnv=""; await envPath("");
+    say("no env active","sys");
+    return back();
+  }
+
+  if(sub==="install"||sub==="add"){
+    if(!activeEnv) throw new Error("no env active. venv use <name>");
+    if(!argv.length) throw new Error("usage: venv install <package...>");
+    for(const spec of argv){
+      say("installing "+spec+" into "+activeEnv,"sys");
+      try{
+        await installOne(spec);
+        const r=await relocate(spec,activeEnv);
+        if(!r.moved) say("  installed, but it stayed global (runtime package, or no file record)","sys");
+        if(envs[activeEnv].packages.indexOf(spec)<0) envs[activeEnv].packages.push(spec);
+        say("  ok","ok");
+      }catch(e){ say("  failed: "+whyFailed(e),"err"); }
+    }
+    await envPath(activeEnv);
+    return back();
+  }
+
+  if(sub==="remove"||sub==="rm"||sub==="uninstall"){
+    if(argv.length && envs[argv[0]] && (argv[0]!==activeEnv || argv.length===1)){
+      const n=argv[0];
+      try{ py.FS.rmdir; }catch(e){}
+      const nuke=(d)=>{ for(const f of py.FS.readdir(d)){ if(f==="."||f==="..") continue; const q=d+"/"+f; const st=py.FS.stat(q); py.FS.isDir(st.mode)?nuke(q):py.FS.unlink(q); } py.FS.rmdir(d); };
+      try{ nuke(ENVROOT+"/"+n); }catch(e){}
+      delete envs[n];
+      if(activeEnv===n){ activeEnv=""; await envPath(""); }
+      say("removed env "+n,"sys");
+      return back();
+    }
+    if(!activeEnv) throw new Error("usage: venv rm <envname>   or   venv rm <package> while an env is active");
+    envs[activeEnv].packages=envs[activeEnv].packages.filter(x=>argv.indexOf(x)<0);
+    say("dropped from "+activeEnv+": "+argv.join(" "),"sys");
+    return back();
+  }
+
+  if(sub==="freeze"){
+    if(!activeEnv) throw new Error("no env active");
+    const body=envs[activeEnv].packages.join("\n")+"\n";
+    const dest=argv[0]?abs(argv[0]):cwd+"/requirements.txt";
+    py.FS.writeFile(dest,body);
+    say(body.trim()||"(empty)");
+    say("wrote "+dest.slice(HOME.length+1),"ok");
+    return {lines:L};
+  }
+
+  if(sub==="which"||sub==="status"){
+    say(activeEnv?("active: "+activeEnv+"  ("+envs[activeEnv].packages.length+" packages)"):"no env active","sys");
+    const sp=await py.runPythonAsync("import sys, json\njson.dumps([p for p in sys.path if p.startswith('/envs/')])");
+    say("path: "+(JSON.parse(sp).join(", ")||"(none)"),"sys");
+    return {lines:L};
+  }
+
+  throw new Error("venv: create use deactivate list install rm freeze which");
+}
+
+/* ---------- git over the github data api ---------- */
+let repos={};
+
+function sha1Hex(bytes){
+  const rol=(n,s)=>((n<<s)|(n>>>(32-s)))>>>0;
+  const ml=bytes.length;
+  const buf=new Uint8Array((((ml+8)>>6)+1)<<6);
+  buf.set(bytes); buf[ml]=0x80;
+  const dv=new DataView(buf.buffer);
+  dv.setUint32(buf.length-4,(ml<<3)>>>0,false);
+  dv.setUint32(buf.length-8,Math.floor(ml/536870912),false);
+  let h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0;
+  const w=new Uint32Array(80);
+  for(let i=0;i<buf.length;i+=64){
+    for(let j=0;j<16;j++) w[j]=dv.getUint32(i+j*4,false);
+    for(let j=16;j<80;j++) w[j]=rol(w[j-3]^w[j-8]^w[j-14]^w[j-16],1);
+    let a=h0,b=h1,c=h2,d=h3,e=h4;
+    for(let j=0;j<80;j++){
+      let f,k;
+      if(j<20){f=(b&c)|(~b&d);k=0x5A827999;}
+      else if(j<40){f=b^c^d;k=0x6ED9EBA1;}
+      else if(j<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC;}
+      else{f=b^c^d;k=0xCA62C1D6;}
+      const t=(rol(a,5)+f+e+k+w[j])>>>0;
+      e=d;d=c;c=rol(b,30);b=a;a=t;
+    }
+    h0=(h0+a)>>>0;h1=(h1+b)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;h4=(h4+e)>>>0;
+  }
+  return [h0,h1,h2,h3,h4].map(x=>x.toString(16).padStart(8,"0")).join("");
+}
+function blobSha(u8){
+  const hdr=new TextEncoder().encode("blob "+u8.length+"\0");
+  const all=new Uint8Array(hdr.length+u8.length);
+  all.set(hdr); all.set(u8,hdr.length);
+  return sha1Hex(all);
+}
+
+async function ghx(url,token,method,body,accept){
+  const h={Accept:accept||"application/vnd.github+json"};
+  if(token) h.Authorization="Bearer "+token;
+  if(body) h["Content-Type"]="application/json";
+  const r=await fetch(url,{method:method||"GET",headers:h,body:body?JSON.stringify(body):undefined});
+  if(!r.ok){
+    let m=""; try{ m=(await r.json()).message||""; }catch(e){}
+    if(r.status===401) throw new Error("github rejected the token. check its scopes.");
+    if(r.status===403) throw new Error("forbidden. the token needs contents write on this repo.");
+    throw new Error("github "+r.status+(m?": "+m:""));
+  }
+  return r;
+}
+
+function filesUnder(root){
+  const out=[];
+  (function walk(dir,rel){
+    let names; try{ names=py.FS.readdir(dir); }catch(e){ return; }
+    for(const n of names){
+      if(n==="."||n==="..") continue;
+      const full=dir+"/"+n, r=rel?rel+"/"+n:n;
+      let st; try{ st=py.FS.stat(full); }catch(e){ continue; }
+      if(py.FS.isDir(st.mode)){ if(out.length<4000) walk(full,r); }
+      else out.push(r);
+    }
+  })(root,"");
+  return out;
+}
+
+/* a repo controls its own path strings, so treat them as hostile */
+function safeRel(rel){
+  const p=String(rel||"").replace(/\\/g,"/");
+  if(!p || p[0]==="/" || /(^|\/)\.\.(\/|$)/.test(p)) return null;
+  if(/[\u0000-\u001f]/.test(p)) return null;
+  return p;
+}
+/* build a python string literal instead of splicing raw text into source */
+function pyStr(v){ return JSON.stringify(String(v)); }
+
+function ignoreList(root){
+  const pats=["__pycache__/",".git/","*.pyc","*.pyo",".DS_Store",".env",".env.*","node_modules/",".ipynb_checkpoints/"];
+  try{
+    new TextDecoder().decode(py.FS.readFile(root+"/.gitignore")).split("\n").forEach(l=>{
+      l=l.trim();
+      if(l && !l.startsWith("#") && !l.startsWith("!")) pats.push(l.replace(/^\.?\//,""));
+    });
+  }catch(e){}
+  return pats;
+}
+function ignored(path,pats){
+  const base=path.split("/").pop();
+  const parts=path.split("/");
+  return pats.some(p=>{
+    if(p.endsWith("/")) return parts.indexOf(p.slice(0,-1))>-1;
+    if(p.indexOf("*")>-1){
+      const re=new RegExp("^"+p.replace(/[.+^${}()|[\]\\]/g,"\\$&").replace(/\*/g,".*")+"$");
+      return re.test(base)||re.test(path);
+    }
+    return path===p||base===p||path.indexOf(p+"/")===0;
+  });
+}
+
+function repoAt(dir){
+  let d=dir||cwd;
+  while(d.length>=HOME.length){
+    const rel=d===HOME?"":d.slice(HOME.length+1);
+    if(rel && repos[rel]) return {name:rel,r:repos[rel],root:HOME+"/"+rel};
+    if(d===HOME) break;
+    d=d.slice(0,d.lastIndexOf("/"));
+  }
+  const keys=Object.keys(repos);
+  if(keys.length===1) return {name:keys[0],r:repos[keys[0]],root:HOME+"/"+keys[0]};
+  return null;
+}
+
+function gitStatus(ent){
+  const {r,root}=ent;
+  const pats=ignoreList(root);
+  const now=filesUnder(root).filter(f=>!ignored(f,pats));
+  const modified=[],added=[],deleted=[],seen={};
+  for(const p of now){
+    seen[p]=1;
+    let sha; try{ sha=blobSha(py.FS.readFile(root+"/"+p)); }catch(e){ continue; }
+    if(!(p in r.files)) added.push(p);
+    else if(r.files[p]!==sha) modified.push(p);
+  }
+  Object.keys(r.files).forEach(p=>{ if(!seen[p]) deleted.push(p); });
+  return {modified:modified.sort(),added:added.sort(),deleted:deleted.sort()};
+}
+
+function textOf(root,p){
+  try{ return new TextDecoder("utf-8",{fatal:false}).decode(py.FS.readFile(root+"/"+p)); }
+  catch(e){ return ""; }
+}
+
+function lineDiff(a,b){
+  const A=a.split("\n"), B=b.split("\n");
+  let s=0; while(s<A.length&&s<B.length&&A[s]===B[s]) s++;
+  let ea=A.length, eb=B.length;
+  while(ea>s&&eb>s&&A[ea-1]===B[eb-1]){ ea--; eb--; }
+  const out=[];
+  out.push({t:"@@ line "+(s+1)+" @@",c:"sys"});
+  for(let i=s;i<ea;i++) out.push({t:"- "+A[i],c:"err"});
+  for(let i=s;i<eb;i++) out.push({t:"+ "+B[i],c:"ok"});
+  if(out.length===1) out.push({t:"(no text change)",c:"sys"});
+  return out;
+}
+
+async function remoteText(r,path,sha){
+  const u="https://api.github.com/repos/"+r.owner+"/"+r.repo+"/git/blobs/"+sha;
+  const j=await (await ghx(u,arguments[3]||"", "GET")).json();
+  return atob((j.content||"").replace(/\n/g,""));
+}
+
+async function gitCmd(a){
+  const sub=(a.sub||"").toLowerCase(), argv=a.argv||[], token=a.token||"";
+  const L=[]; let dirty=false;
+  const say=(t,c)=>L.push({t:t,c:c||""});
+
+  if(sub==="_state") return {state:repos};
+  if(sub==="_load"){ repos=a.state||{}; return {}; }
+
+  if(sub==="create"||sub==="publish"||sub==="new"){
+    if(!token) throw new Error("publishing needs a token with repo scope: git token <pat>");
+    const raw=a.raw||"";
+    const priv=/(^|\s)(-p|--private)(\s|$)/.test(raw);
+    const mm=raw.match(/-m\s+"([^"]*)"|-m\s+'([^']*)'/);
+    const msg=(mm?(mm[1]||mm[2]):"")||"initial commit";
+    const plain=argv.filter(x=>x[0]!=="-"&&x!==msg);
+    let name=plain[0];
+    let dir=plain[1]||(cwd!==HOME?cwd.slice(HOME.length+1):"");
+    if(!name&&dir) name=dir.split("/").pop();
+    if(!name) throw new Error('usage: git create <repo-name> [folder]   -p for private');
+    if(!dir) dir=name;
+    const root=HOME+"/"+dir;
+    try{ py.FS.mkdirTree(root); }catch(e){}
+    const pats=ignoreList(root);
+    const files=filesUnder(root).filter(f=>!ignored(f,pats));
+    if(!files.length) throw new Error("nothing to publish in "+dir+"/ (is the folder empty?)");
+
+    const me=await (await ghx("https://api.github.com/user",token)).json();
+    let repoj=null, existed=false;
+    try{
+      repoj=await (await ghx("https://api.github.com/user/repos",token,"POST",{name:name,private:priv,auto_init:false})).json();
+      say("created github.com/"+me.login+"/"+name+(priv?" (private)":""),"ok");
+    }catch(e){
+      if(/already exists|422/.test(String(e.message))){
+        existed=true;
+        repoj=await (await ghx("https://api.github.com/repos/"+me.login+"/"+name,token)).json();
+        say("repo already exists, pushing into it","sys");
+      } else throw e;
+    }
+    const owner=repoj.owner?repoj.owner.login:me.login;
+    const branch=repoj.default_branch||"main";
+    const api="https://api.github.com/repos/"+owner+"/"+name;
+
+    let head="";
+    if(existed){
+      try{ head=(await (await ghx(api+"/git/ref/heads/"+encodeURIComponent(branch),token)).json()).object.sha; }catch(e){}
+    }
+
+    say("uploading "+files.length+" file"+(files.length===1?"":"s")+"...","sys");
+    const entries=[];
+    for(const f of files){
+      const data=py.FS.readFile(root+"/"+f);
+      const b=await (await ghx(api+"/git/blobs",token,"POST",{content:b64(data),encoding:"base64"})).json();
+      entries.push({path:f,mode:"100644",type:"blob",sha:b.sha});
+    }
+    const body={tree:entries};
+    if(head){
+      const hc=await (await ghx(api+"/commits/"+head,token)).json();
+      body.base_tree=hc.commit.tree.sha;
+    }
+    const tree=await (await ghx(api+"/git/trees",token,"POST",body)).json();
+    const commit=await (await ghx(api+"/git/commits",token,"POST",{message:msg,tree:tree.sha,parents:head?[head]:[]})).json();
+    if(head) await ghx(api+"/git/refs/heads/"+encodeURIComponent(branch),token,"PATCH",{sha:commit.sha});
+    else await ghx(api+"/git/refs",token,"POST",{ref:"refs/heads/"+branch,sha:commit.sha});
+
+    const map={};
+    files.forEach(f=>{ try{ map[f]=blobSha(py.FS.readFile(root+"/"+f)); }catch(e){} });
+    repos[dir]={owner:owner,repo:name,branch:branch,head:commit.sha,files:map,staged:[]};
+    say("["+branch+" "+commit.sha.slice(0,7)+"] "+msg,"ok");
+    say(repoj.html_url||("https://github.com/"+owner+"/"+name),"ok");
+    if(pats.indexOf(".env")>-1) say("note: .env and __pycache__ were left out on purpose","sys");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="init"||sub==="remote"){
+    if(sub==="remote"&&!argv.length){
+      const ent=repoAt();
+      if(!ent) return {lines:[{t:"no repo here. use: git init owner/repo",c:"sys"}]};
+      say(ent.name+"  ->  "+ent.r.owner+"/"+ent.r.repo+"  branch "+ent.r.branch+"  @ "+ent.r.head.slice(0,7),"sys");
+      return {lines:L};
+    }
+    const spec=(sub==="init"?argv[0]:argv[1])||"";
+    const m=spec.replace(/\.git$/,"").match(/([\w.-]+)\/([\w.-]+)$/);
+    if(!m) throw new Error("usage: git init owner/repo [dir]");
+    const dir=(sub==="init"?argv[1]:argv[2])||(cwd===HOME?m[2]:cwd.slice(HOME.length+1));
+    const root=HOME+"/"+dir;
+    try{ py.FS.mkdirTree(root); }catch(e){}
+    const api="https://api.github.com/repos/"+m[1]+"/"+m[2];
+    const meta=await (await ghx(api,token)).json();
+    const branch=meta.default_branch||"main";
+    let head="", tree={tree:[]};
+    try{
+      head=(await (await ghx(api+"/git/ref/heads/"+encodeURIComponent(branch),token)).json()).object.sha;
+      tree=await (await ghx(api+"/git/trees/"+head+"?recursive=1",token)).json();
+    }catch(e){ say("remote has no commits yet, this will be the first","sys"); }
+    const local={}; filesUnder(root).forEach(p=>local[p]=1);
+    const files={};
+    (tree.tree||[]).filter(e=>e.type==="blob").forEach(e=>{ if(local[e.path]) files[e.path]=e.sha; });
+    repos[dir]={owner:m[1],repo:m[2],branch:branch,head:head,files:files,staged:[]};
+    say("tracking "+m[1]+"/"+m[2]+" ("+branch+") in "+dir+"/","ok");
+    return {lines:L,dirty:true};
+  }
+
+  const ent=repoAt();
+  if(!ent) throw new Error("no repo here. clone one, or bind a folder with: git init owner/repo");
+  const {r,root,name}=ent;
+  const api="https://api.github.com/repos/"+r.owner+"/"+r.repo;
+
+  if(sub==="status"||sub==="st"){
+    const st=gitStatus(ent);
+    say(r.owner+"/"+r.repo+"  on "+r.branch+"  @ "+r.head.slice(0,7),"sys");
+    const staged=r.staged.filter(p=>st.modified.includes(p)||st.added.includes(p)||st.deleted.includes(p));
+    if(staged.length){ say("staged:","ok"); staged.forEach(p=>say("   "+p,"ok")); }
+    const un=x=>!r.staged.includes(x);
+    const mod=st.modified.filter(un), add=st.added.filter(un), del=st.deleted.filter(un);
+    if(mod.length){ say("modified:"); mod.forEach(p=>say("   "+p)); }
+    if(del.length){ say("deleted:","err"); del.forEach(p=>say("   "+p,"err")); }
+    if(add.length){ say("untracked:","sys"); add.forEach(p=>say("   "+p,"sys")); }
+    if(!staged.length&&!mod.length&&!add.length&&!del.length) say("clean","ok");
+    return {lines:L};
+  }
+
+  if(sub==="add"){
+    if(!argv.length) throw new Error("usage: git add <path...>  or  git add .");
+    const st=gitStatus(ent);
+    const all=st.modified.concat(st.added,st.deleted);
+    let picked=[];
+    if(argv[0]==="."||argv[0]==="-A"||argv[0]==="--all") picked=all;
+    else argv.forEach(p=>{
+      const hits=all.filter(f=>f===p||f.indexOf(p.replace(/\/$/,"")+"/")===0);
+      if(!hits.length) say("nothing to stage for "+p,"sys");
+      picked=picked.concat(hits);
+    });
+    picked.forEach(p=>{ if(!r.staged.includes(p)) r.staged.push(p); });
+    say(r.staged.length+" file"+(r.staged.length===1?"":"s")+" staged","ok");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="reset"||sub==="unstage"){
+    if(!argv.length||argv[0]===".") r.staged=[];
+    else r.staged=r.staged.filter(p=>!argv.includes(p));
+    say(r.staged.length+" staged","sys");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="diff"){
+    const st=gitStatus(ent);
+    const targets=argv.length?argv:st.modified;
+    if(!targets.length){ say("no changes","sys"); return {lines:L}; }
+    for(const p of targets.slice(0,8)){
+      const sha=r.files[p];
+      if(!sha){ say(p+" is new","ok"); continue; }
+      say("--- "+p,"sys");
+      let before="";
+      try{
+        const j=await (await ghx(api+"/git/blobs/"+sha,token)).json();
+        before=atob((j.content||"").replace(/\n/g,""));
+      }catch(e){ say("  cannot fetch the old version ("+e.message+")","err"); continue; }
+      lineDiff(before,textOf(root,p)).forEach(l=>L.push(l));
+    }
+    return {lines:L};
+  }
+
+  if(sub==="commit"){
+    if(!token) throw new Error("commits need a token: git token <pat>");
+    const raw=a.raw||"";
+    const mm=raw.match(/-m\s+"([^"]*)"|-m\s+'([^']*)'|-m\s+(.+)$/);
+    const msg=(mm?(mm[1]||mm[2]||mm[3]):"").trim();
+    if(!msg) throw new Error('usage: git commit -m "message"   (add -a to stage everything)');
+    const st=gitStatus(ent);
+    if(/(^|\s)(-a|--all)(\s|$)/.test(raw)) r.staged=st.modified.concat(st.added,st.deleted);
+    const kind={};
+    st.modified.concat(st.added).forEach(p=>kind[p]="put");
+    st.deleted.forEach(p=>kind[p]="del");
+    const use=r.staged.filter(p=>kind[p]);
+    if(!use.length) throw new Error("nothing staged. git add <path> or git commit -a -m \"...\"");
+    say("committing "+use.length+" file"+(use.length===1?"":"s")+"...","sys");
+    let baseTree="";
+    if(r.head){
+      const headCommit=await (await ghx(api+"/commits/"+r.head,token)).json();
+      baseTree=headCommit.commit.tree.sha;
+    }
+    const entries=[];
+    for(const p of use){
+      if(kind[p]==="del"){ entries.push({path:p,mode:"100644",type:"blob",sha:null}); continue; }
+      const data=py.FS.readFile(root+"/"+p);
+      const b=await (await ghx(api+"/git/blobs",token,"POST",{content:b64(data),encoding:"base64"})).json();
+      entries.push({path:p,mode:"100644",type:"blob",sha:b.sha});
+    }
+    const treeBody={tree:entries};
+    if(baseTree) treeBody.base_tree=baseTree;
+    const tree=await (await ghx(api+"/git/trees",token,"POST",treeBody)).json();
+    const commit=await (await ghx(api+"/git/commits",token,"POST",{message:msg,tree:tree.sha,parents:r.head?[r.head]:[]})).json();
+    if(r.head) await ghx(api+"/git/refs/heads/"+encodeURIComponent(r.branch),token,"PATCH",{sha:commit.sha,force:false});
+    else await ghx(api+"/git/refs",token,"POST",{ref:"refs/heads/"+r.branch,sha:commit.sha});
+    r.head=commit.sha;
+    for(const p of use){
+      if(kind[p]==="del") delete r.files[p];
+      else { try{ r.files[p]=blobSha(py.FS.readFile(root+"/"+p)); }catch(e){} }
+    }
+    r.staged=[];
+    say("["+r.branch+" "+commit.sha.slice(0,7)+"] "+msg,"ok");
+    say("pushed to "+r.owner+"/"+r.repo,"ok");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="push"){
+    say("commits go straight to github, so there is nothing queued to push.","sys");
+    say("publishing a new folder? git create <repo-name>","sys");
+    say("if you meant to send local changes: git add . && git commit -m \"msg\"","sys");
+    return {lines:L};
+  }
+
+  if(sub==="pull"||sub==="fetch"){
+    const ref=await (await ghx(api+"/git/ref/heads/"+encodeURIComponent(r.branch),token)).json();
+    const head=ref.object.sha;
+    if(head===r.head){ say("already up to date","sys"); return {lines:L}; }
+    const tree=await (await ghx(api+"/git/trees/"+head+"?recursive=1",token)).json();
+    const blobs=(tree.tree||[]).filter(e=>e.type==="blob"&&(e.size||0)<=2097152);
+    let got=0, kept=0;
+    for(const e of blobs){
+      const base=r.files[e.path];
+      if(base===e.sha) continue;
+      let localSha=null;
+      try{ localSha=blobSha(py.FS.readFile(root+"/"+e.path)); }catch(err){}
+      if(localSha && base && localSha!==base){ say("conflict, kept yours: "+e.path,"err"); kept++; continue; }
+      if(localSha && !base){ say("conflict, kept yours: "+e.path,"err"); kept++; continue; }
+      if(!safeRel(e.path)){ say("skipped unsafe path: "+e.path,"err"); continue; }
+      try{
+        const u="https://raw.githubusercontent.com/"+r.owner+"/"+r.repo+"/"+head+"/"+e.path.split("/").map(encodeURIComponent).join("/");
+        const resp=await fetch(u);
+        if(!resp.ok) throw new Error("http "+resp.status);
+        const buf=new Uint8Array(await resp.arrayBuffer());
+        const full=root+"/"+e.path;
+        try{ py.FS.mkdirTree(full.slice(0,full.lastIndexOf("/"))); }catch(err){}
+        py.FS.writeFile(full,buf);
+        r.files[e.path]=e.sha;
+        got++;
+      }catch(err){ say("skip "+e.path+" ("+err.message+")","err"); }
+    }
+    r.head=head;
+    say("updated "+got+" file"+(got===1?"":"s")+(kept?", kept "+kept+" of yours":"")+" at "+head.slice(0,7),"ok");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="log"){
+    const n=parseInt(argv[0],10)||10;
+    const list=await (await ghx(api+"/commits?sha="+encodeURIComponent(r.branch)+"&per_page="+n,token)).json();
+    list.forEach(c=>{
+      const when=(c.commit.author.date||"").slice(0,10);
+      say(c.sha.slice(0,7)+"  "+when+"  "+(c.commit.author.name||"")+"  "+c.commit.message.split("\n")[0]);
+    });
+    return {lines:L};
+  }
+
+  if(sub==="branch"){
+    if(!argv.length){
+      const list=await (await ghx(api+"/branches?per_page=50",token)).json();
+      list.forEach(b=>say((b.name===r.branch?"* ":"  ")+b.name, b.name===r.branch?"ok":""));
+      return {lines:L};
+    }
+    await ghx(api+"/git/refs",token,"POST",{ref:"refs/heads/"+argv[0],sha:r.head});
+    r.branch=argv[0];
+    say("created "+argv[0]+" from "+r.head.slice(0,7)+" and switched to it","ok");
+    return {lines:L,dirty:true};
+  }
+
+  if(sub==="checkout"||sub==="switch"){
+    if(!argv.length) throw new Error("usage: git checkout <branch>");
+    const ref=await (await ghx(api+"/git/ref/heads/"+encodeURIComponent(argv[0]),token)).json();
+    r.branch=argv[0]; r.head=ref.object.sha; r.staged=[];
+    say("on "+argv[0]+" @ "+r.head.slice(0,7)+". run git pull to sync the files.","ok");
+    return {lines:L,dirty:true};
+  }
+
+  throw new Error("git "+sub+" is not supported here. try: status add reset diff commit pull log branch checkout remote init clone token");
+}
+
+async function gh(url, token, accept){
+  const h={"Accept":accept||"application/vnd.github+json"};
+  if(token) h["Authorization"]="Bearer "+token;
+  const r=await fetch(url,{headers:h});
+  if(!r.ok){
+    if(r.status===403) throw new Error("github rate limit hit. add a token with: git token <pat>");
+    if(r.status===404) throw new Error("not found (a private repo needs a token)");
+    throw new Error("github "+r.status);
+  }
+  return r;
+}
+
+const NEVER=["micropip","pyodide","pyodide_js","js","builtins","__main__","this","self"];
+
+async function needMicropip(){
+  try{ py.pyimport("micropip"); return true; }catch(e){}
+  try{ await py.loadPackage("micropip"); }catch(e){}
+  try{ py.pyimport("micropip"); return true; }
+  catch(e){
+    throw new Error(self.USEDBASE===self.LOCALBASE
+      ? "micropip is missing from the local runtime folder. run:  ./setup.sh"
+      : "micropip is not available in this runtime");
+  }
+}
+
+/* try the runtime's own build first, fall back to a pypi wheel */
+async function installOne(spec){
+  const bare=String(spec).replace(/[<>=!~\[].*$/,"").trim();
+  let rtErr="";
+  try{
+    await py.loadPackage(bare);
+    /* loadPackage resolves even when the fetch 404s, so confirm it really landed */
+    const lp=py.loadedPackages||{};
+    if(Object.keys(lp).some(k=>k.toLowerCase()===bare.toLowerCase())) return "runtime";
+    rtErr="the runtime reported success but did not load "+bare;
+  }catch(e){ rtErr=String(e&&e.message||e); }
+  if(self.USEDBASE && self.USEDBASE===self.LOCALBASE)
+    throw new Error("no local wheel for "+bare+". on the machine serving this, run:  ./setup.sh "+bare+"   (or ./setup.sh --recommended)");
+  await needMicropip();
+  await py.runPythonAsync("import micropip\nawait micropip.install('"+String(spec).replace(/'/g,"")+"')");
+  return "pypi";
+}
+
+function whyFailed(e){
+  const m=String(e&&e.message||e);
+  if(/pure Python 3 wheel|not found|No matching distribution/i.test(m))
+    return "no wasm or pure python wheel exists for it";
+  return m.split("\n")[0].slice(0,160);
+}
+
+const ALIAS={pyodide_http:"pyodide-http",bs4:"beautifulsoup4",PIL:"pillow",sklearn:"scikit-learn",yaml:"pyyaml",dateutil:"python-dateutil",
+  attr:"attrs",serial:"pyserial",Crypto:"pycryptodome",docx:"python-docx",pptx:"python-pptx",fitz:"pymupdf",
+  cv2:"opencv-python",OpenSSL:"pyopenssl",jwt:"pyjwt",dotenv:"python-dotenv",mpl_toolkits:"matplotlib"};
+
+async function ensureImports(src, skip){
+  const names={};
+  const re=/^[ \t]*(?:import|from)[ \t]+([A-Za-z_][\w.]*)/gm;
+  let m; while((m=re.exec(src))!==null) names[m[1].split(".")[0]]=1;
+  (skip||[]).forEach(n=>delete names[n]);
+  NEVER.forEach(n=>delete names[n]);
+  const list=Object.keys(names);
+  if(!list.length) return;
+  try{ await py.loadPackagesFromImports(src); }catch(e){}
+  let missing=[];
+  try{
+    missing=JSON.parse(await py.runPythonAsync(
+      "import importlib.util, json\n"+
+      "_n=json.loads(r'''"+JSON.stringify(list)+"''')\n"+
+      "_m=[]\n"+
+      "for _x in _n:\n"+
+      "    try:\n"+
+      "        if importlib.util.find_spec(_x) is None: _m.append(_x)\n"+
+      "    except Exception: _m.append(_x)\n"+
+      "json.dumps(_m)"));
+  }catch(e){}
+  for(const name of missing){
+    if(NEVER.indexOf(name)>-1) continue;
+    const pkg=ALIAS[name]||name;
+    out("installing "+pkg+"\n","sys");
+    try{
+      const how=await installOne(pkg);
+      out("installed "+pkg+" ("+how+")\n","ok");
+    }catch(e){ out("cannot install "+pkg+": "+whyFailed(e)+"\n","err"); }
+  }
+  if(list.indexOf("requests")>-1||list.indexOf("urllib3")>-1){
+    try{ await py.runPythonAsync("import micropip\nawait micropip.install('pyodide-http')\nimport pyodide_http\npyodide_http.patch_all()"); }catch(e){}
+  }
+}
+
+async function figures(){
+  let imgs=[];
+  try{
+    imgs=JSON.parse(await py.runPythonAsync(
+      "import sys, json\n"+
+      "_i=[]\n"+
+      "if 'matplotlib.pyplot' in sys.modules:\n"+
+      "    import io, base64\n"+
+      "    _p=sys.modules['matplotlib.pyplot']\n"+
+      "    for _n in _p.get_fignums():\n"+
+      "        _b=io.BytesIO()\n"+
+      "        _p.figure(_n).savefig(_b, format='png', dpi=110, bbox_inches='tight')\n"+
+      "        _i.append(base64.b64encode(_b.getvalue()).decode())\n"+
+      "    _p.close('all')\n"+
+      "json.dumps(_i)"));
+  }catch(e){}
+  imgs.forEach(b=>post({type:"img",b64:b}));
+}
+
+function listDir(dir, depth, acc){
+  let names;
+  try{ names=py.FS.readdir(dir); }catch(e){ return acc; }
+  for(const n of names){
+    if(n==="."||n==="..") continue;
+    const p=dir+"/"+n;
+    let st; try{ st=py.FS.stat(p); }catch(e){ continue; }
+    if(py.FS.isDir(st.mode)){ acc.push({path:p,name:p.slice(HOME.length+1),dir:true,size:0}); if(depth>0) listDir(p,depth-1,acc); }
+    else acc.push({path:p,name:p.slice(HOME.length+1),dir:false,size:st.size});
+  }
+  return acc;
+}
+
+async function handle(msg){
+  const {id,cmd,arg}=msg;
+  const done=(r,t)=>post({type:"done",id:id,ok:true,result:r},t);
+  const fail=e=>post({type:"done",id:id,ok:false,error:String(e&&e.message?e.message:e)});
+
+  try{
+    if(cmd!=="init" && !py) await boot();
+
+    switch(cmd){
+      case "init": await boot(); return done(true);
+
+      case "write": {
+        for(const f of arg){
+          const p=HOME+"/"+f.name;
+          if(f.dir){ try{ py.FS.mkdirTree(p); }catch(e){} continue; }
+          const dir=p.slice(0,p.lastIndexOf("/"));
+          try{ py.FS.mkdirTree(dir); }catch(e){}
+          py.FS.writeFile(p, f.b64!==undefined ? unb64(f.b64) : f.text);
+        }
+        return done(true);
+      }
+
+      case "run": {
+        stdinQ = arg.stdin||[];
+        await ensureImports(arg.code, arg.own||[]);
+        const rel=arg.name||"main.py";
+        const full=HOME+"/"+rel;
+        const here=full.slice(0,full.lastIndexOf("/"));
+        await py.runPythonAsync(
+          "import sys, importlib\n"+
+          "importlib.invalidate_caches()\n"+
+          "_home = "+pyStr(HOME+"/")+"\n"+
+          "for _k in [k for k,v in list(sys.modules.items()) if getattr(v,'__file__',None) and str(v.__file__).startswith(_home)]:\n"+
+          "    sys.modules.pop(_k, None)\n"+
+          "for _p in ["+pyStr(here)+","+pyStr(HOME)+"]:\n"+
+          "    if _p in sys.path: sys.path.remove(_p)\n"+
+          "    sys.path.insert(0,_p)\n"+
+          "__file__ = "+pyStr(full)+"\n"+
+          "__name__ = '__main__'\n"+
+          "import os as _os\n"+
+          "for _envf in ["+pyStr(here+"/.env")+","+pyStr(HOME+"/.env")+"]:\n"+
+          "    if _os.path.exists(_envf):\n"+
+          "        for _line in open(_envf):\n"+
+          "            _line=_line.strip()\n"+
+          "            if not _line or _line.startswith('#') or '=' not in _line: continue\n"+
+          "            _k,_v=_line.split('=',1)\n"+
+          "            _k=_k.replace('export ','').strip(); _v=_v.strip().strip('\\'\"')\n"+
+          "            _os.environ.setdefault(_k,_v)\n"
+        );
+        const t0=Date.now();
+        await py.runPythonAsync(arg.code);
+        await figures();
+        return done({ms:Date.now()-t0});
+      }
+
+      case "repl": {
+        stdinQ = arg.stdin||[];
+        const fut=cons.push(arg.line);
+        if(fut.syntax_check==="incomplete"){ fut.destroy && fut.destroy(); return done({incomplete:true}); }
+        if(fut.syntax_check==="syntax-error"){ const e=fut.formatted_error; fut.destroy&&fut.destroy(); out(e,"err"); return done({}); }
+        try{
+          const val=await fut;
+          if(val!==undefined && val!==null){
+            let text;
+            try{ text=py.runPython("repr")(val); }catch(e){ text=String(val); }
+            post({type:"out",text:String(text)+"\n",stream:"res"});
+            if(val && val.destroy) try{ val.destroy(); }catch(e){}
+          }
+        }catch(e){
+          out(fut.formatted_error||String(e.message||e),"err");
+        }
+        fut.destroy && fut.destroy();
+        await figures();
+        return done({});
+      }
+
+      case "install": {
+        out("installing "+arg+"\n","sys");
+        try{
+          const how=await installOne(arg);
+          out("installed "+arg+" ("+how+")\n","ok");
+        }catch(e){ throw new Error(whyFailed(e)); }
+        return done(true);
+      }
+
+      case "clone": {
+        const owner=arg.owner, repo=arg.repo, dest=arg.dest||arg.repo, token=arg.token||"";
+        let branch=arg.ref;
+        if(!branch){
+          const meta=await (await gh("https://api.github.com/repos/"+owner+"/"+repo, token)).json();
+          branch=meta.default_branch||"main";
+        }
+        out("cloning "+owner+"/"+repo+" @ "+branch+"\n","sys");
+        const tree=await (await gh("https://api.github.com/repos/"+owner+"/"+repo+"/git/trees/"+encodeURIComponent(branch)+"?recursive=1", token)).json();
+        if(!tree.tree) throw new Error("no file tree returned. check the repo name and branch.");
+        const root=HOME+"/"+dest;
+        try{ py.FS.mkdirTree(root); }catch(e){}
+        const all=tree.tree.filter(e=>e.type==="blob");
+        const blobs=all.filter(e=>(e.size||0)<=2097152 && safeRel(e.path));
+        tree.tree.filter(e=>e.type==="tree").forEach(e=>{
+          const rel=safeRel(e.path);
+          if(rel) try{ py.FS.mkdirTree(root+"/"+rel); }catch(err){}
+        });
+        let n=0;
+        const queue=blobs.slice();
+        const pull=async ()=>{
+          while(queue.length){
+            const e=queue.shift();
+            try{
+              let buf;
+              if(token){
+                const r=await gh("https://api.github.com/repos/"+owner+"/"+repo+"/git/blobs/"+e.sha, token, "application/vnd.github.raw");
+                buf=new Uint8Array(await r.arrayBuffer());
+              }else{
+                const u="https://raw.githubusercontent.com/"+owner+"/"+repo+"/"+encodeURIComponent(branch)+"/"+e.path.split("/").map(encodeURIComponent).join("/");
+                const r=await fetch(u);
+                if(!r.ok) throw new Error("http "+r.status);
+                buf=new Uint8Array(await r.arrayBuffer());
+              }
+              const rel=safeRel(e.path);
+              if(!rel) throw new Error("unsafe path in repo");
+              const p=root+"/"+rel;
+              try{ py.FS.mkdirTree(p.slice(0,p.lastIndexOf("/"))); }catch(err){}
+              py.FS.writeFile(p,buf);
+            }catch(err){ out("skip "+e.path+" ("+(err.message||err)+")\n","err"); }
+            n++;
+            if(n%40===0) out(n+" / "+blobs.length+" files\n","sys");
+          }
+        };
+        await Promise.all([pull(),pull(),pull(),pull(),pull(),pull()]);
+        await py.runPythonAsync("import sys\nif '"+root+"' not in sys.path: sys.path.insert(0,'"+root+"')");
+        try{
+          const refj=await (await gh("https://api.github.com/repos/"+owner+"/"+repo+"/git/ref/heads/"+encodeURIComponent(branch), token)).json();
+          const map={};
+          blobs.forEach(e=>{ map[e.path]=e.sha; });
+          repos[dest]={owner:owner,repo:repo,branch:branch,head:refj.object.sha,files:map,staged:[]};
+        }catch(e){ out("clone worked but git tracking is off: "+(e.message||e)+"\n","sys"); }
+        const big=all.length-blobs.length;
+        out("cloned "+blobs.length+" files into "+dest+"/"+(big?"  ("+big+" over 2MB skipped)":"")+"\n","ok");
+        return done({dir:dest,count:blobs.length,branch:branch});
+      }
+
+      case "git": return done(await gitCmd(arg));
+
+      case "venv": return done(await venvCmd(arg));
+
+      case "envload": {
+        envs=arg.envs||{}; activeEnv=arg.active||"";
+        if(activeEnv){ try{ py.FS.mkdirTree(ENVROOT+"/"+activeEnv); }catch(e){} await envPath(activeEnv); }
+        return done(true);
+      }
+
+      case "fmt": {
+        await needMicropip();
+        await py.runPythonAsync("import micropip\nimport importlib.util\nif importlib.util.find_spec('black') is None: await micropip.install('black')");
+        const src=arg.code;
+        py.globals.set("_src", src);
+        const outp=await py.runPythonAsync("import black\nblack.format_str(_src, mode=black.Mode())");
+        return done(String(outp));
+      }
+
+      case "wheel": {
+        try{ py.FS.mkdirTree("/wheels"); }catch(e){}
+        py.FS.writeFile("/wheels/"+arg.name, unb64(arg.b64));
+        out("installing "+arg.name+"\n","sys");
+        await needMicropip();
+        await py.runPythonAsync("import micropip\nawait micropip.install('emfs:/wheels/"+arg.name+"')");
+        out("installed "+arg.name+"\n","ok");
+        return done(true);
+      }
+
+      case "uninstall": {
+        await needMicropip();
+        await py.runPythonAsync("import micropip\nmicropip.uninstall('"+String(arg).replace(/'/g,"")+"')");
+        out("removed "+arg+"\n","sys");
+        return done(true);
+      }
+
+      case "piplist": {
+        await needMicropip().catch(()=>{});
+        let t="[]";
+        try{ t=await py.runPythonAsync("import micropip, json\njson.dumps(sorted(micropip.list().keys()))"); }catch(e){}
+        return done(JSON.parse(t));
+      }
+
+      case "ls": {
+        const dir=abs(arg||"");
+        return done(listDir(dir,0,[]).map(f=>({name:f.path.slice(dir.length+1),dir:f.dir,size:f.size})));
+      }
+
+      case "tree": return done(listDir(HOME,6,[]).slice(0,600));
+
+      case "read": {
+        const data=py.FS.readFile(abs(arg));
+        return done({name:arg,data:data},[data.buffer]);
+      }
+
+      case "readmany": {
+        const files=[];
+        for(const p of arg){ try{ files.push({name:p.slice(HOME.length+1),data:py.FS.readFile(p)}); }catch(e){} }
+        return done(files, files.map(f=>f.data.buffer));
+      }
+
+      case "snapshot": {
+        const all=listDir(HOME,6,[]).filter(f=>!f.dir);
+        const keep=[]; let total=0;
+        for(const f of all){
+          if((arg||[]).indexOf(f.name)>-1) continue;
+          if(f.size>240*1024) continue;
+          if(total+f.size>1600*1024) break;
+          try{ keep.push({name:f.name,b64:b64(py.FS.readFile(f.path))}); total+=f.size; }catch(e){}
+        }
+        return done(keep);
+      }
+
+      case "rm": {
+        const p=abs(arg);
+        let st; try{ st=py.FS.stat(p); }catch(e){ return done(true); }
+        if(py.FS.isDir(st.mode)){
+          const nuke=(d)=>{
+            for(const n of py.FS.readdir(d)){
+              if(n==="."||n==="..") continue;
+              const q=d+"/"+n;
+              const s2=py.FS.stat(q);
+              py.FS.isDir(s2.mode) ? nuke(q) : py.FS.unlink(q);
+            }
+            py.FS.rmdir(d);
+          };
+          nuke(p);
+        } else py.FS.unlink(p);
+        return done(true);
+      }
+
+      case "mv": {
+        const from=abs(arg.from), to=abs(arg.to);
+        const dir=to.slice(0,to.lastIndexOf("/"));
+        try{ py.FS.mkdirTree(dir); }catch(e){}
+        py.FS.rename(from,to);
+        return done(true);
+      }
+
+      case "mkdir": { py.FS.mkdir(abs(arg)); return done(true); }
+
+      case "cd": {
+        const p=abs(arg||HOME);
+        const st=py.FS.stat(p);
+        if(!py.FS.isDir(st.mode)) throw new Error("not a directory: "+arg);
+        cwd=p; await py.runPythonAsync("import os\nos.chdir('"+p+"')");
+        return done(cwd);
+      }
+
+      case "pwd": return done(cwd);
+
+      case "packages": return done(Object.keys(py.loadedPackages||{}).sort());
+
+      case "reset": {
+        cons && cons.destroy && cons.destroy();
+        await py.runPythonAsync("import sys\nfor _k in list(sys.modules):\n    pass");
+        const mod=py.pyimport("pyodide.console");
+        cons=mod.PyodideConsole(py.globals);
+        cons.stdout_callback=s=>out(s,"out");
+        cons.stderr_callback=s=>out(s,"err");
+        return done(true);
+      }
+    }
+    return fail("unknown command "+cmd);
+  }catch(e){ fail(e); }
+}
+
+self.onmessage=e=>{
+  if(e.data && e.data.cmd==="setbase"){ self.LOCALBASE=e.data.arg; return; }
+  handle(e.data);
+};
+</script>
+
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- storage: use the host app's if present, otherwise this browser ---------- */
+(function(){
+  if(window.storage && typeof window.storage.get==="function") return;
+  var mem={}, dbp=null;
+  function db(){
+    if(dbp) return dbp;
+    dbp=new Promise(function(res,rej){
+      if(!window.indexedDB) return rej(new Error("no idb"));
+      var rq=indexedDB.open("pocketpy",1);
+      rq.onupgradeneeded=function(){ rq.result.createObjectStore("kv"); };
+      rq.onsuccess=function(){ res(rq.result); };
+      rq.onerror=function(){ rej(rq.error); };
+    }).catch(function(){ return null; });
+    return dbp;
+  }
+  function tx(mode,fn){
+    return db().then(function(d){
+      if(!d) throw new Error("no idb");
+      return new Promise(function(res,rej){
+        var t=d.transaction("kv",mode), st=t.objectStore("kv"), rq=fn(st);
+        t.oncomplete=function(){ res(rq?rq.result:undefined); };
+        t.onerror=function(){ rej(t.error); };
+      });
+    });
+  }
+  function lsGet(k){ try{ return localStorage.getItem("ppy::"+k); }catch(e){ return mem[k]===undefined?null:mem[k]; } }
+  function lsSet(k,v){ try{ localStorage.setItem("ppy::"+k,v); }catch(e){ mem[k]=v; } }
+  function lsDel(k){ try{ localStorage.removeItem("ppy::"+k); }catch(e){ delete mem[k]; } }
+
+  window.storage={
+    get:function(k){
+      return tx("readonly",function(st){ return st.get(k); })
+        .then(function(v){ return v===undefined?null:{key:k,value:v}; })
+        .catch(function(){ var v=lsGet(k); return v===null?null:{key:k,value:v}; });
+    },
+    set:function(k,v){
+      return tx("readwrite",function(st){ return st.put(v,k); })
+        .then(function(){ return {key:k,value:v}; })
+        .catch(function(){ lsSet(k,v); return {key:k,value:v}; });
+    },
+    "delete":function(k){
+      return tx("readwrite",function(st){ return st.delete(k); })
+        .then(function(){ return {key:k,deleted:true}; })
+        .catch(function(){ lsDel(k); return {key:k,deleted:true}; });
+    },
+    list:function(){
+      return tx("readonly",function(st){ return st.getAllKeys(); })
+        .then(function(k){ return {keys:k||[]}; })
+        .catch(function(){ return {keys:[]}; });
+    }
+  };
+})();
+
+/* ---------- offline shell ----------
+   Service workers only register in a secure context: https, or localhost.
+   Over a plain http LAN address the browser refuses, and nothing gets cached,
+   so the app dies the moment the server goes away. We say so out loud. */
+window.OFFLINE_STATE={ok:false,why:"not checked"};
+(function(){
+  if(!("serviceWorker" in navigator)){ window.OFFLINE_STATE={ok:false,why:"this browser has no service worker support"}; return; }
+  if(!window.isSecureContext){
+    window.OFFLINE_STATE={ok:false,why:"served over plain http from "+location.hostname+
+      ". browsers only allow offline caching on https or localhost, so nothing is being saved."};
+    return;
+  }
+  if(!/^https?:/.test(location.protocol)){ window.OFFLINE_STATE={ok:false,why:"not served over http"}; return; }
+  navigator.serviceWorker.register("sw.js").then(function(){
+    window.OFFLINE_STATE={ok:true,why:"caching is on"};
+  }).catch(function(e){
+    window.OFFLINE_STATE={ok:false,why:"service worker did not register: "+(e&&e.message||e)};
+  });
+})();
+
+var $=function(i){return document.getElementById(i);};
+var code=$("code"), hi=$("hi"), gut=$("gutter"), scr=$("scroll");
+var tbody=$("tbody"), tin=$("tin"), lamp=$("lamp");
+var KEY="ppy:state", WSKEY="ppy:workspace", WHKEY="ppy:wheels", HOME="/home/pyodide";
+
+var STARTER=[
+"# Pocket Python",
+"# Cmd/Ctrl+Enter runs this file. The terminal below shares the same disk.",
+"",
+"from utils.text import shout",
+"import numpy as np",
+"",
+"print(shout(\"folders and imports work\"))",
+"",
+"x = np.arange(6)",
+"print(\"squares:\", x ** 2)",
+"",
+"with open(\"notes.txt\", \"w\") as f:",
+"    f.write(\"written from python\\n\")",
+"",
+"print(\"wrote notes.txt, see the Workspace tab\")",
+""].join("\n");
+
+var HELPER=[
+"def shout(msg):",
+"    return msg.upper() + \"!\"",
+""].join("\n");
+
+var state={files:{},order:[],active:null,font:14,termH:36,history:[],pkgs:[],dirs:[],collapsed:{},here:"",envs:{},env:""};
+var worker=null, ready=false, busy=false, seq=1, waiting={}, cwd=HOME;
+var hIdx=-1, buffer=[], saveT=null, wsT=null, pyver="", ghToken="";
+
+/* ---------------- storage ---------------- */
+function save(){
+  if(state.active) state.files[state.active]=code.value;
+  try{ window.storage.set(KEY,JSON.stringify(state)).catch(function(){}); }catch(e){}
+}
+function queueSave(){ clearTimeout(saveT); saveT=setTimeout(save,600); }
+
+function saveWorkspace(){
+  clearTimeout(wsT);
+  wsT=setTimeout(function(){
+    if(!ready) return;
+    call("snapshot",Object.keys(state.files)).then(function(files){
+      try{ window.storage.set(WSKEY,JSON.stringify(files)).catch(function(){}); }catch(e){}
+    }).catch(function(){});
+  },1200);
+}
+
+async function loadState(){
+  var d=null;
+  try{ var r=await window.storage.get(KEY); if(r&&r.value) d=JSON.parse(r.value); }catch(e){}
+  if(d&&d.order&&d.order.length){
+    state.files=d.files||{}; state.order=d.order; state.font=d.font||14;
+    state.termH=d.termH||36; state.history=d.history||[]; state.pkgs=d.pkgs||[];
+    state.dirs=d.dirs||[]; state.collapsed=d.collapsed||{}; state.here=d.here||"";
+    state.envs=d.envs||{}; state.env=d.env||"";
+    state.active=state.files[d.active]!==undefined?d.active:state.order[0];
+  }else{
+    state.files={"main.py":STARTER,"utils/text.py":HELPER};
+    state.order=["main.py","utils/text.py"];
+    state.dirs=["utils"];
+    state.active="main.py";
+  }
+  $("term").style.height=state.termH+"%";
+  setFont(0); openFile(state.active); drawFiles();
+}
+
+function toB64(u8){
+  var s="",CH=0x8000;
+  for(var i=0;i<u8.length;i+=CH) s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));
+  return btoa(s);
+}
+
+/* ---------- github sign in ---------- */
+var ghUser="";
+async function ghWhoami(t){
+  var r=await fetch("https://api.github.com/user",{headers:{Authorization:"Bearer "+(t||ghToken),Accept:"application/vnd.github+json"}});
+  if(r.status===401) throw new Error("that token was rejected");
+  if(!r.ok) throw new Error("github "+r.status);
+  return (await r.json()).login;
+}
+function setAuthUI(){
+  var b=$("stGh");
+  b.textContent=ghUser?("@"+ghUser):"sign in";
+  b.className="ghbtn"+(ghUser?" in":"");
+  b.title=ghUser?"Signed in. Click to sign out.":"Sign in to GitHub";
+}
+function signInDialog(){
+  var v=$("authVeil"), i=$("authI"), e=$("authErr");
+  i.value=""; e.style.display="none"; v.classList.add("on");
+  setTimeout(function(){ i.focus(); },50);
+  function shut(){ v.classList.remove("on"); i.value=""; }
+  $("authC").onclick=shut;
+  $("authG").onclick=async function(){
+    var t=i.value.trim();
+    if(!t) return;
+    $("authG").textContent="Checking";
+    try{
+      var who=await ghWhoami(t);
+      setToken(t); ghUser=who;
+      try{ window.storage.set("ppy:ghuser",who).catch(function(){}); }catch(err){}
+      setAuthUI(); shut();
+      print("signed in as @"+who,"ok");
+    }catch(err){
+      e.textContent=String(err.message||err); e.style.display="block";
+    }
+    $("authG").textContent="Sign in";
+  };
+  i.onkeydown=function(ev){
+    if(ev.key==="Enter"){ ev.preventDefault(); $("authG").click(); }
+    if(ev.key==="Escape"){ ev.preventDefault(); shut(); }
+  };
+}
+function signOut(){
+  setToken(""); ghUser="";
+  try{ window.storage.delete("ppy:ghuser").catch(function(){}); }catch(e){}
+  setAuthUI();
+  print("signed out","sys");
+}
+$("stGh").onclick=function(){
+  if(!ghUser) return signInDialog();
+  if(confirm("Sign out of GitHub? The token is removed from this browser.")) signOut();
+};
+async function loadUser(){
+  try{ var r=await window.storage.get("ppy:ghuser"); if(r&&r.value) ghUser=r.value; }catch(e){}
+  setAuthUI();
+  if(ghToken){
+    try{ ghUser=await ghWhoami(); setAuthUI(); }
+    catch(e){ ghUser=""; setAuthUI(); }
+  } else if(ghUser){ ghUser=""; setAuthUI(); }
+}
+
+async function saveRepos(){
+  try{
+    var st=await call("git",{sub:"_state"});
+    window.storage.set("ppy:repos",JSON.stringify(st.state||{})).catch(function(){});
+  }catch(e){}
+}
+async function loadRepos(){
+  try{
+    var r=await window.storage.get("ppy:repos");
+    if(r&&r.value) await call("git",{sub:"_load",state:JSON.parse(r.value)});
+  }catch(e){}
+}
+
+async function loadToken(){
+  try{ var r=await window.storage.get("ppy:gh"); if(r&&r.value) ghToken=r.value; }catch(e){}
+}
+function setToken(t){
+  ghToken=t||"";
+  try{ t ? window.storage.set("ppy:gh",t).catch(function(){}) : window.storage.delete("ppy:gh").catch(function(){}); }catch(e){}
+}
+
+function parseRepo(spec){
+  spec=String(spec||"").trim().replace(/\.git$/,"").replace(/\/$/,"");
+  var m=spec.match(/github\.com[/:]([\w.-]+)\/([\w.-]+)(?:\/tree\/([^/?#]+))?/);
+  if(m) return {owner:m[1],repo:m[2],ref:m[3]||""};
+  m=spec.match(/^([\w.-]+)\/([\w.-]+)(?:[@#]([\w./-]+))?$/);
+  if(m) return {owner:m[1],repo:m[2],ref:m[3]||""};
+  return null;
+}
+
+async function clone(spec,dest){
+  var r=parseRepo(spec);
+  if(!r){ print("give me owner/repo, owner/repo@branch, or a github url","err"); return; }
+  if(!ready){ print("python is still starting","sys"); return; }
+  $("term").classList.remove("hide");
+  setBusy(true);
+  try{
+    var res=await call("clone",{owner:r.owner,repo:r.repo,ref:r.ref,dest:dest||"",token:ghToken});
+    print("cd "+res.dir+" to work in it","sys");
+    saveRepos();
+    tab("work");
+  }catch(e){ print(String(e.message||e),"err"); }
+  setBusy(false);
+  drawWork(); saveWorkspace();
+}
+
+async function storedWheels(){
+  try{ var r=await window.storage.get(WHKEY); if(r&&r.value) return JSON.parse(r.value); }catch(e){}
+  return [];
+}
+async function keepWheel(name,b64){
+  var all=await storedWheels();
+  all=all.filter(function(w){ return w.name!==name; });
+  all.push({name:name,b64:b64});
+  var total=0, keep=[];
+  for(var i=all.length-1;i>=0;i--){
+    total+=all[i].b64.length;
+    if(total>3200000) break;
+    keep.unshift(all[i]);
+  }
+  try{ window.storage.set(WHKEY,JSON.stringify(keep)).catch(function(){}); }catch(e){}
+}
+function remember(spec){
+  if(state.pkgs.indexOf(spec)<0){ state.pkgs.push(spec); save(); }
+}
+function forget(spec){
+  state.pkgs=state.pkgs.filter(function(p){ return p!==spec; });
+  save();
+}
+
+async function storedWorkspace(){
+  try{ var r=await window.storage.get(WSKEY); if(r&&r.value) return JSON.parse(r.value); }catch(e){}
+  return [];
+}
+
+/* ---------------- worker ---------------- */
+function spawn(){
+  var src=$("workerSrc").textContent;
+  var url=URL.createObjectURL(new Blob([src],{type:"text/javascript"}));
+  try{ worker=new Worker(url); }
+  catch(err){
+    lamp.className="bad"; $("stPy").textContent="worker blocked";
+    print("This browser blocked the background worker. Open the published page in its own tab and reload.","err");
+    return;
+  }
+  worker.onmessage=function(e){
+    var m=e.data;
+    if(m.type==="out") return print(m.text, m.stream==="err"?"err":m.stream==="res"?"res":m.stream==="sys"?"sys":m.stream==="ok"?"ok":m.stream==="echo"?"echo":"");
+    if(m.type==="img") return printImg(m.b64);
+    if(m.type==="boot"){
+      if(!m.ok){
+        lamp.className="bad"; $("stPy").textContent="load failed";
+        print("Python could not load: "+(m.error||"unknown"),"err");
+        print(m.offline
+          ? "you are offline and no local runtime was found. put a pyodide folder next to this file, or connect once so it can cache."
+          : "check the connection and reload.","sys");
+        return;
+      }
+      ready=true; pyver=m.version; lamp.className="good";
+      $("stPy").textContent="python "+m.version;
+      restore();
+      return;
+    }
+    if(m.type==="done"){
+      var w=waiting[m.id]; delete waiting[m.id];
+      if(!w) return;
+      m.ok ? w.res(m.result) : w.rej(new Error(m.error));
+    }
+  };
+  worker.onerror=function(){ lamp.className="bad"; $("stPy").textContent="worker error"; };
+  try{
+    if(/^https?:/.test(location.protocol)) worker.postMessage({cmd:"setbase",arg:new URL("pyodide/",location.href).href});
+  }catch(e){}
+  worker.postMessage({id:0,cmd:"init"});
+}
+
+function call(cmd,arg){
+  return new Promise(function(res,rej){
+    if(!worker) return rej(new Error("no worker"));
+    var id=seq++;
+    waiting[id]={res:res,rej:rej};
+    worker.postMessage({id:id,cmd:cmd,arg:arg});
+  });
+}
+
+async function restore(){
+  var ws=await storedWorkspace();
+  var mine=state.dirs.map(function(d){ return {name:d,dir:true}; })
+    .concat(state.order.map(function(n){ return {name:n,text:state.files[n]}; }));
+  if(mine.length) await call("write",mine).catch(function(){});
+  if(ws.length){ await call("write",ws).catch(function(){}); print("restored "+ws.length+" workspace file"+(ws.length>1?"s":""),"sys"); }
+  await loadRepos();
+  if(Object.keys(state.envs).length||state.env){
+    try{ await call("envload",{envs:state.envs,active:state.env}); }catch(e){}
+    if(state.env) print("env "+state.env+" active","sys");
+  }
+  drawWork(); drawPkgs();
+  restorePkgs();
+}
+
+async function restorePkgs(){
+  var wheels=await storedWheels();
+  var names=state.pkgs.filter(function(p){ return !/\.whl$/i.test(p); });
+  if(!wheels.length && !names.length) return;
+  for(var i=0;i<wheels.length;i++){
+    try{ await call("wheel",wheels[i]); }catch(e){ print("wheel failed: "+wheels[i].name,"err"); }
+  }
+  for(var j=0;j<names.length;j++){
+    try{ await call("install",names[j]); }catch(e){ print("could not restore "+names[j],"sys"); }
+  }
+  drawPkgs();
+}
+
+function kill(){
+  if(worker){ worker.terminate(); worker=null; }
+  Object.keys(waiting).forEach(function(k){
+    try{ waiting[k].rej(new Error("stopped")); }catch(e){}
+    delete waiting[k];
+  });
+  ready=false; busy=false;
+  setBusy(false);
+  $("stPy").textContent="restarting";
+  lamp.className="busy";
+  spawn();
+}
+$("stop").onclick=function(){ print("^C stopped","err"); kill(); };
+
+function setBusy(on){
+  busy=on;
+  $("run").disabled=on;
+  $("run").textContent=on?"Running":"Run";
+  $("stop").classList.toggle("on",on);
+  lamp.className=on?"busy":(ready?"good":"");
+}
+
+/* ---------------- terminal ---------------- */
+function print(text,cls){
+  var s=document.createElement("span");
+  if(cls) s.className=cls;
+  s.textContent=/\n$/.test(text)?text:text+"\n";
+  tbody.appendChild(s);
+  while(tbody.childNodes.length>1200) tbody.removeChild(tbody.firstChild);
+  tbody.scrollTop=tbody.scrollHeight;
+}
+function printImg(b64){
+  var i=new Image(); i.src="data:image/png;base64,"+b64;
+  i.onload=function(){ tbody.scrollTop=tbody.scrollHeight; };
+  tbody.appendChild(i); tbody.scrollTop=tbody.scrollHeight;
+}
+$("tclr").onclick=function(){ tbody.textContent=""; };
+$("tbody").addEventListener("click",function(e){ if(!window.getSelection().toString()) tin.focus(); });
+
+function prompt(){
+  var short=cwd===HOME?"~":cwd.replace(HOME,"~");
+  if(state.env) short="("+state.env+") "+short;
+  $("ps").textContent=buffer.length?"...":short+" $";
+  $("stCwd").textContent=short;
+}
+
+var HELP=[
+"commands",
+"  ls [dir]          list the workspace",
+"  cd <dir>          change directory",
+"  cat <file>        print a file",
+"  rm <file>         delete a file",
+"  mkdir <dir>       make a directory",
+"  mv <from> <to>    move or rename",
+"  tree              show the whole workspace",
+"  get <file>        download a file to your machine",
+"  edit <file>       open a workspace file in the editor",
+"  run [file]        run the editor file, or a named one",
+"  clone <owner/repo[@branch]> [dir]  pull a github repo into the workspace",
+"  git login         sign in with a token (masked, never logged)",
+"  git whoami | git logout",
+"  git status | add <path|.> | reset | diff [path]",
+'  git commit -m "msg" [-a]   writes a real commit to the branch',
+"  git pull | log [n] | branch [name] | checkout <b> | remote",
+"  git create <name> [folder] [-p]  make a new github repo from a folder and upload it",
+"  git init owner/repo [dir]  track a folder you made yourself",
+"  pip install <pkg>  from PyPI, a url, or a local .whl",
+"  pip install -r requirements.txt",
+"  pip list | pip uninstall <pkg>",
+"  preview <file>    render html or markdown",
+"  fmt [file]        run black on it",
+"  env               show the keys .env will load",
+"  offline           is this page able to work without a network",
+"  venv create|use|deactivate|list|install|rm|freeze|which",
+"  reset             clear the interpreter namespace",
+"  clear             clear this screen",
+"anything else runs as python. multi-line blocks continue until a blank line.",
+"",
+"keys",
+"  Cmd/Ctrl+Enter    run the current file",
+"  Cmd/Ctrl+S        save        Cmd/Ctrl+K clear terminal",
+"  Cmd/Ctrl+B        sidebar     Cmd/Ctrl+J terminal",
+"  Ctrl+C            stop a running program"
+].join("\n");
+
+var SHELL=/^(ls|cd|pwd|cat|rm|mv|tree|mkdir|get|download|edit|open|run|pip|clone|git|venv|env|fmt|preview|offline|serve|clear|cls|help|reset|files)\b/;
+
+var SECRET=/^\s*git\s+(?:token|login|signin)\s+\S+/i;
+
+async function submit(line){
+  var short=cwd===HOME?"~":cwd.replace(HOME,"~");
+  if(state.env) short="("+state.env+") "+short;
+  var secret=SECRET.test(line);
+  var shown=secret ? line.replace(/(\s)(\S+)\s*$/,"$1••••••••") : line;
+  print((buffer.length?"... ":short+" $ ")+shown,"echo");
+
+  if(!secret && line.trim() && state.history[state.history.length-1]!==line){
+    state.history.push(line);
+    if(state.history.length>300) state.history.shift();
+    queueSave();
+  }
+  hIdx=-1;
+
+  if(buffer.length){
+    if(line.trim()===""){ var block=buffer.join("\n"); buffer=[]; prompt(); return exec(block+"\n"); }
+    buffer.push(line); prompt(); return;
+  }
+
+  var t=line.trim();
+  if(!t) return;
+
+  if(SHELL.test(t) && !/[=(]/.test(t.split(/\s+/)[0])) return shell(t);
+  return exec(line);
+}
+
+async function exec(line){
+  if(!ready){ print("python is still starting","sys"); return; }
+  setBusy(true);
+  try{
+    var r=await call("repl",{line:line,stdin:[]});
+    if(r&&r.incomplete){ buffer.push(line); prompt(); }
+  }catch(e){ print(String(e.message||e),"err"); }
+  setBusy(false); prompt();
+  drawWork(); saveWorkspace();
+}
+
+async function shell(t){
+  var sp=t.indexOf(" ");
+  var cmd=sp<0?t:t.slice(0,sp);
+  var arg=sp<0?"":t.slice(sp+1).trim();
+  try{
+    if(cmd==="help"){ print(HELP,"sys"); return; }
+    if(cmd==="clear"||cmd==="cls"){ tbody.textContent=""; return; }
+    if(cmd==="files"){ print(state.order.join("\n"),"sys"); return; }
+    if(!ready){ print("python is still starting","sys"); return; }
+
+    if(cmd==="pwd"){ print(await call("pwd")); return; }
+    if(cmd==="cd"){ cwd=await call("cd",arg||HOME); prompt(); return; }
+    if(cmd==="mkdir"){ await call("mkdir",arg); drawWork(); return; }
+    if(cmd==="mv"){
+      var mv=arg.split(/\s+/);
+      if(mv.length<2){ print("usage: mv <from> <to>","sys"); return; }
+      await call("mv",{from:mv[0],to:mv[1]});
+      drawWork(); saveWorkspace(); print("moved "+mv[0]+" -> "+mv[1],"sys"); return;
+    }
+    if(cmd==="tree"){
+      var all=await call("tree");
+      if(!all.length){ print("(empty)","sys"); return; }
+      print(all.map(function(f){
+        var d=f.name.split("/").length-1;
+        return new Array(d+1).join("   ")+f.name.split("/").pop()+(f.dir?"/":"   "+bytes(f.size));
+      }).join("\n"));
+      return;
+    }
+    if(cmd==="rm"){ await call("rm",arg); drawWork(); saveWorkspace(); print("removed "+arg,"sys"); return; }
+
+    if(cmd==="ls"){
+      var items=await call("ls",arg);
+      if(!items.length){ print("(empty)","sys"); return; }
+      print(items.map(function(f){
+        return (f.dir?"  ":"  ")+f.name+(f.dir?"/":"")+(f.dir?"":"   "+bytes(f.size));
+      }).join("\n"));
+      return;
+    }
+    if(cmd==="cat"){
+      var f=await call("read",arg);
+      print(new TextDecoder().decode(f.data));
+      return;
+    }
+    if(cmd==="get"||cmd==="download"){
+      var g=await call("read",arg);
+      download(arg.split("/").pop(), g.data);
+      print("downloaded "+arg,"ok");
+      return;
+    }
+    if(cmd==="edit"||cmd==="open"){
+      var o=await call("read",arg);
+      var text=new TextDecoder().decode(o.data);
+      var n=cleanPath(arg);
+      if(state.files[n]===undefined){ state.order.push(n); if(n.indexOf("/")>0) addDir(n.slice(0,n.lastIndexOf("/"))); }
+      state.files[n]=text; openFile(n); drawFiles();
+      print("opened "+n+" in the editor","ok");
+      return;
+    }
+    if(cmd==="pip"){
+      if(arg==="list"){
+        var pl=await call("piplist");
+        print(pl.length?pl.join("\n"):"(nothing installed)","sys");
+        return;
+      }
+      var un=arg.match(/^(?:uninstall|remove)\s+(.+)$/);
+      if(un){
+        var gone=un[1].split(/\s+/);
+        for(var u=0;u<gone.length;u++){
+          try{ await call("uninstall",gone[u]); forget(gone[u]); }catch(e){ print("cannot remove "+gone[u],"err"); }
+        }
+        drawPkgs(); return;
+      }
+      var m=arg.match(/^install\s+(.+)$/);
+      if(!m){ print("usage: pip install <name|url|file.whl>   pip list   pip uninstall <name>","sys"); return; }
+      var specs=m[1].trim();
+      setBusy(true);
+      try{
+        var req=specs.match(/^-r\s+(\S+)$/);
+        if(req){
+          var rf=await call("read",req[1]);
+          specs=new TextDecoder().decode(rf.data).split("\n")
+            .map(function(l){ return l.replace(/#.*/,"").trim(); })
+            .filter(Boolean).join(" ");
+        }
+        var names=specs.split(/\s+/);
+        for(var i=0;i<names.length;i++){
+          var spec=names[i];
+          try{
+            if(/\.whl$/i.test(spec) && !/^https?:/i.test(spec)){
+              var wf=await call("read",spec);
+              var wb=toB64(new Uint8Array(wf.data));
+              await call("wheel",{name:spec.split("/").pop(),b64:wb});
+              if(wb.length<3000000) keepWheel(spec.split("/").pop(),wb);
+              remember(spec.split("/").pop());
+            } else {
+              await call("install",spec);
+              remember(spec);
+            }
+          }catch(e){ print("failed: "+(e.message||e),"err"); }
+        }
+      }catch(e){ print(String(e.message||e),"err"); }
+      setBusy(false); drawPkgs();
+      return;
+    }
+    if(cmd==="clone"){
+      var cb=arg.split(/\s+/);
+      return clone(cb[0],cb[1]||"");
+    }
+    if(cmd==="git"){
+      if(!navigator.onLine && !/^(status|add|reset|remote|whoami|logout)/.test(arg)){
+        print("that needs a connection to github. offline, you can still edit, run and use venvs.","sys");
+        return;
+      }
+      var gm=arg.match(/^clone\s+(\S+)(?:\s+(\S+))?/);
+      if(gm) return clone(gm[1],gm[2]||"");
+      if(/^(login|signin)\s*$/.test(arg)){ signInDialog(); return; }
+      if(/^(logout|signout)\s*$/.test(arg)){ signOut(); return; }
+      if(/^whoami\s*$/.test(arg)){
+        if(!ghToken){ print("not signed in. click sign in at the bottom right, or: git login","sys"); return; }
+        try{ ghUser=await ghWhoami(); setAuthUI(); print("@"+ghUser,"ok"); }
+        catch(e){ print(String(e.message||e),"err"); }
+        return;
+      }
+      var tm=arg.match(/^(?:token|login|signin)(?:\s+(\S+))?/);
+      if(tm){
+        if(!tm[1]){ signInDialog(); return; }
+        if(tm[1]==="clear"){ signOut(); return; }
+        try{
+          var who=await ghWhoami(tm[1]);
+          setToken(tm[1]); ghUser=who;
+          try{ window.storage.set("ppy:ghuser",who).catch(function(){}); }catch(e){}
+          setAuthUI();
+          print("signed in as @"+who,"ok");
+        }catch(e){ print(String(e.message||e),"err"); }
+        return;
+      }
+      var gp=arg.split(/\s+/);
+      if(!gp[0]){ print("git: create status add reset diff commit pull log branch checkout remote init clone token","sys"); return; }
+      setBusy(true);
+      try{
+        await syncEditor();
+        var gr=await call("git",{sub:gp[0],argv:gp.slice(1),raw:arg,token:ghToken});
+        (gr.lines||[]).forEach(function(l){ print(l.t,l.c); });
+        if(gr.dirty){ saveRepos(); drawWork(); saveWorkspace(); }
+      }catch(e){ print(String(e.message||e),"err"); }
+      setBusy(false);
+      return;
+    }
+    if(cmd==="venv"){
+      var vp=arg.split(/\s+/).filter(Boolean);
+      setBusy(true);
+      try{
+        var vr=await call("venv",{sub:vp[0]||"list",argv:vp.slice(1)});
+        (vr.lines||[]).forEach(function(l){ print(l.t,l.c); });
+        if(vr.dirty){ state.envs=vr.envs||{}; state.env=vr.active||""; save(); prompt(); drawPkgs(); }
+      }catch(e){ print(String(e.message||e),"err"); }
+      setBusy(false);
+      return;
+    }
+    if(cmd==="env"){
+      if(arg==="reload"||!arg){
+        var envtxt="";
+        try{ var ef=await call("read",".env"); envtxt=new TextDecoder().decode(ef.data); }catch(e){}
+        if(!envtxt){ print("no .env in this folder. make one with New file named .env","sys"); return; }
+        print(envtxt.split("\n").filter(function(l){ return l.trim()&&!l.trim().startsWith("#"); })
+          .map(function(l){ return "  "+l.split("=")[0].trim(); }).join("\n")+"\n(loaded into os.environ on every run)","sys");
+        return;
+      }
+      print("usage: env   (lists keys from .env)","sys"); return;
+    }
+    if(cmd==="fmt"){
+      var target=arg||state.active;
+      setBusy(true);
+      try{
+        print("formatting "+target+"...","sys");
+        var srcTxt=state.files[target]!==undefined?state.files[target]:new TextDecoder().decode((await call("read",target)).data);
+        var formatted=await call("fmt",{code:srcTxt});
+        if(state.files[target]!==undefined){
+          state.files[target]=formatted;
+          if(state.active===target){ code.value=formatted; paint(); }
+          save();
+        } else { await call("write",[{name:target,text:formatted}]); }
+        print("formatted "+target,"ok");
+      }catch(e){ print(String(e.message||e),"err"); }
+      setBusy(false);
+      return;
+    }
+    if(cmd==="offline"){
+      var st=window.OFFLINE_STATE||{};
+      print("url            "+location.href,"sys");
+      print("secure context "+(window.isSecureContext?"yes":"no"),window.isSecureContext?"ok":"err");
+      print("caching        "+(st.ok?"on":"off - "+st.why),st.ok?"ok":"err");
+      if(navigator.serviceWorker&&navigator.serviceWorker.controller) print("controller     active","ok");
+      try{
+        var names=await caches.keys();
+        var n=0;
+        for(var ci=0;ci<names.length;ci++){ n+=(await (await caches.open(names[ci])).keys()).length; }
+        print("cached files   "+n,n>10?"ok":"sys");
+      }catch(e){ print("cached files   unknown","sys"); }
+      try{
+        var est=await navigator.storage.estimate();
+        print("storage used   "+bytes(est.usage||0),"sys");
+      }catch(e){}
+      if(!window.isSecureContext){
+        print("");
+        print("to make this work offline, the page must come from https or localhost:","sys");
+        print("  1. put these files on github pages, open the https url once, then add to home screen","sys");
+        print("  2. serve with caddy over https and trust its certificate on this device","sys");
+        print("  3. run the server on this device itself and use http://localhost:8000","sys");
+        print("see OFFLINE.md for the exact steps","sys");
+      }
+      return;
+    }
+    if(cmd==="preview"){
+      var pf=arg||state.active;
+      try{ await preview(pf); }catch(e){ print(String(e.message||e),"err"); }
+      return;
+    }
+    if(cmd==="reset"){ await call("reset"); print("namespace cleared","sys"); return; }
+    if(cmd==="run"){ return runFile(arg||state.active); }
+  }catch(e){ print(String(e.message||e),"err"); }
+}
+
+tin.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){
+    e.preventDefault();
+    var v=tin.value; tin.value="";
+    submit(v);
+    return;
+  }
+  if(e.key==="ArrowUp"){
+    e.preventDefault();
+    if(!state.history.length) return;
+    if(hIdx<0) hIdx=state.history.length;
+    hIdx=Math.max(0,hIdx-1);
+    tin.value=state.history[hIdx]; return;
+  }
+  if(e.key==="ArrowDown"){
+    e.preventDefault();
+    if(hIdx<0) return;
+    hIdx++;
+    if(hIdx>=state.history.length){ hIdx=-1; tin.value=""; return; }
+    tin.value=state.history[hIdx]; return;
+  }
+  if(e.key==="c"&&e.ctrlKey){
+    e.preventDefault();
+    if(busy){ print("^C stopped","err"); kill(); }
+    else { buffer=[]; tin.value=""; print("^C","sys"); prompt(); }
+    return;
+  }
+  if(e.key==="l"&&e.ctrlKey){ e.preventDefault(); tbody.textContent=""; }
+});
+
+/* ---------------- run ---------------- */
+function askStdin(){
+  return new Promise(function(res){
+    var v=$("stdinVeil"), i=$("stdinI");
+    i.value=""; v.classList.add("on");
+    setTimeout(function(){ i.focus(); },40);
+    $("stdinC").onclick=function(){ v.classList.remove("on"); res(null); };
+    $("stdinG").onclick=function(){ v.classList.remove("on"); res(i.value.split("\n").filter(function(x,ix,a){ return !(x===""&&ix===a.length-1); })); };
+  });
+}
+
+async function syncEditor(){
+  if(!ready) return;
+  if(state.active) state.files[state.active]=code.value;
+  await call("write",state.dirs.map(function(d){ return {name:d,dir:true}; })
+    .concat(state.order.map(function(n){ return {name:n,text:state.files[n]}; }))).catch(function(){});
+}
+
+async function runFile(name){
+  if(busy) return;
+  save();
+  var src = state.files[name]!==undefined ? state.files[name] : null;
+  if(src===null){
+    try{ var f=await call("read",name); src=new TextDecoder().decode(f.data); }
+    catch(e){ print("no such file: "+name,"err"); return; }
+  }
+  if(!ready){ print("python is still starting","sys"); return; }
+
+  var bang=(src.match(/^#!.*$/m)||[""])[0];
+  var other=bang.match(/\b(bash|sh|zsh|fish|node|ruby|perl|php)\b/);
+  if(other && !/python/i.test(bang)){
+    print(name+" is a "+other[1]+" script, not python. this runs python only.","err");
+    print("shell scripts like setup.sh belong in a terminal on your own machine.","sys");
+    return;
+  }
+  if(!/\.(py|pyw)$/i.test(name)){
+    if(previewable(name)){
+      print(name+" is not python. opening a preview instead.","sys");
+      preview(name, src);
+      return;
+    }
+    print(name+" is not a .py file. rename it or open a python file.","err");
+    return;
+  }
+
+  var stdin=[];
+  if(/\binput\s*\(/.test(src)){
+    var lines=await askStdin();
+    if(lines===null) return;
+    stdin=lines;
+  }
+
+  $("term").classList.remove("hide");
+  setBusy(true);
+  print("$ run "+name,"echo");
+  try{
+    await syncEditor();
+    var own={};
+    state.order.forEach(function(n){
+      var parts=n.split("/");
+      own[parts[0].replace(/\.py$/,"")]=1;
+      own[parts[parts.length-1].replace(/\.py$/,"")]=1;
+    });
+    state.dirs.forEach(function(d){ own[d.split("/")[0]]=1; });
+    var r=await call("run",{code:src,name:name,stdin:stdin,own:Object.keys(own)});
+    print("done in "+(r.ms/1000).toFixed(2)+"s","sys");
+  }catch(e){
+    print(String(e.message||e),"err");
+  }
+  setBusy(false); prompt();
+  drawWork(); drawPkgs(); saveWorkspace();
+  tin.focus();
+}
+$("run").onclick=function(){ runFile(state.active); };
+
+/* ---------------- files ---------------- */
+function bytes(n){ return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB"; }
+
+function buildTree(){
+  var root={dirs:{},files:[]};
+  function ensure(path){
+    var node=root;
+    path.split("/").forEach(function(part){
+      if(!part) return;
+      node.dirs[part]=node.dirs[part]||{dirs:{},files:[]};
+      node=node.dirs[part];
+    });
+    return node;
+  }
+  state.dirs.forEach(ensure);
+  state.order.forEach(function(n){
+    var i=n.lastIndexOf("/");
+    (i<0?root:ensure(n.slice(0,i))).files.push(n);
+  });
+  return root;
+}
+
+function drawFiles(){
+  var w=$("filelist"); w.innerHTML="";
+  renderNode(buildTree(),"",0,w);
+  if(!state.order.length) w.innerHTML='<div class="hint">no files yet</div>';
+}
+
+function renderNode(node,prefix,depth,w){
+  Object.keys(node.dirs).sort().forEach(function(d){
+    var path=prefix?prefix+"/"+d:d;
+    var open=!state.collapsed[path];
+    var row=document.createElement("div");
+    row.className="row"+(state.here===path?" here":"");
+    row.style.paddingLeft=(6+depth*11)+"px";
+
+    var tw=document.createElement("button");
+    tw.className="ic"; tw.textContent=open?"▾":"▸";
+    tw.onclick=function(e){ e.stopPropagation(); state.collapsed[path]=open; save(); drawFiles(); };
+
+    var b=document.createElement("button"); b.className="nm"; b.textContent=d;
+    b.onclick=function(){ state.here=state.here===path?"":path; save(); drawFiles(); };
+
+    var x=document.createElement("button"); x.className="ic"; x.textContent="×"; x.title="Delete folder";
+    x.onclick=function(e){ e.stopPropagation(); killDir(path); };
+
+    row.appendChild(tw); row.appendChild(b); row.appendChild(x); w.appendChild(row);
+    if(open) renderNode(node.dirs[d],path,depth+1,w);
+  });
+
+  node.files.sort().forEach(function(n){
+    var row=document.createElement("div");
+    row.className="row"+(n===state.active?" on":"");
+    row.style.paddingLeft=(6+depth*11+14)+"px";
+    var b=document.createElement("button"); b.className="nm";
+    b.textContent=n.indexOf("/")<0?n:n.slice(n.lastIndexOf("/")+1);
+    b.title=n;
+    b.onclick=function(){ openFile(n); drawFiles(); if(innerWidth<820) rail(false); };
+    var sz=document.createElement("span"); sz.className="sz"; sz.textContent=bytes((state.files[n]||"").length);
+    var x=document.createElement("button"); x.className="ic"; x.textContent="×"; x.title="Delete";
+    x.onclick=function(e){ e.stopPropagation(); killFile(n); };
+    row.appendChild(b); row.appendChild(sz); row.appendChild(x); w.appendChild(row);
+  });
+}
+
+function killDir(path){
+  var inside=state.order.filter(function(n){ return n.indexOf(path+"/")===0; });
+  if(!confirm("Delete "+path+"/ and "+inside.length+" file"+(inside.length===1?"":"s")+"?")) return;
+  inside.forEach(function(n){ delete state.files[n]; });
+  state.order=state.order.filter(function(n){ return inside.indexOf(n)<0; });
+  state.dirs=state.dirs.filter(function(d){ return d!==path && d.indexOf(path+"/")!==0; });
+  if(state.here===path||state.here.indexOf(path+"/")===0) state.here="";
+  if(!state.order.length){ state.files["main.py"]=""; state.order=["main.py"]; }
+  if(state.files[state.active]===undefined) openFile(state.order[0]);
+  if(ready) call("rm",path).catch(function(){});
+  drawFiles(); save();
+}
+
+function openFile(n){
+  if(state.active&&state.files[state.active]!==undefined) state.files[state.active]=code.value;
+  state.active=n; code.value=state.files[n]||"";
+  $("fname").textContent=n; paint(); scr.scrollTop=0; syncPreviewBtn(); save();
+}
+
+function killFile(n){
+  if(state.order.length===1){ print("keep at least one file","sys"); return; }
+  if(!confirm("Delete "+n+"?")) return;
+  delete state.files[n];
+  state.order=state.order.filter(function(x){ return x!==n; });
+  if(ready) call("rm",n).catch(function(){});
+  if(state.active===n) openFile(state.order[0]);
+  drawFiles(); save();
+}
+
+function cleanPath(n){
+  return String(n||"").replace(/\\/g,"/").replace(/^[./]+/,"").replace(/\/+/g,"/").replace(/\/$/,"").trim();
+}
+function niceName(n){
+  n=cleanPath(n);
+  if(!/\.[a-z0-9]+$/i.test(n)) n+=".py";
+  var base=n,i=2;
+  while(state.files[n]!==undefined){ n=base.replace(/(\.[a-z0-9]+)$/i,"-"+i+"$1"); i++; }
+  return n;
+}
+
+function ask(title,val,cb){
+  var v=$("askVeil"), i=$("askI");
+  $("askT").textContent=title; i.value=val; v.classList.add("on");
+  setTimeout(function(){ i.focus(); i.select(); },40);
+  function shut(){ v.classList.remove("on"); }
+  $("askC").onclick=shut;
+  $("askG").onclick=function(){ var t=i.value.trim(); shut(); if(t) cb(t); };
+  i.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); $("askG").click(); } if(e.key==="Escape") shut(); };
+}
+
+$("newf").onclick=function(){
+  var seed=(state.here?state.here+"/":"")+"untitled.py";
+  ask("New file",seed,function(n){
+    n=niceName(n); state.files[n]=""; state.order.push(n);
+    var i=n.lastIndexOf("/");
+    if(i>0) addDir(n.slice(0,i));
+    openFile(n); drawFiles(); code.focus();
+  });
+};
+function addDir(path){
+  path=cleanPath(path);
+  if(!path) return;
+  var parts=path.split("/"), acc="";
+  parts.forEach(function(p){
+    acc=acc?acc+"/"+p:p;
+    if(state.dirs.indexOf(acc)<0) state.dirs.push(acc);
+  });
+  if(ready) call("write",[{name:path,dir:true}]).catch(function(){});
+}
+$("newdir").onclick=function(){
+  var seed=(state.here?state.here+"/":"")+"package";
+  ask("New folder",seed,function(n){
+    n=cleanPath(n); if(!n) return;
+    addDir(n); state.here=n; save(); drawFiles();
+  });
+};
+$("title").onclick=function(){
+  ask("Rename file",state.active,function(n){
+    if(n===state.active) return;
+    var old=state.active; n=niceName(n);
+    state.files[n]=code.value; delete state.files[old];
+    state.order=state.order.map(function(x){ return x===old?n:x; });
+    state.active=n; $("fname").textContent=n;
+    if(ready) call("rm",old).catch(function(){});
+    drawFiles(); save();
+  });
+};
+$("dlf").onclick=function(){ download(state.active,code.value); };
+$("impf").onclick=function(){ $("picker").click(); };
+$("picker").onchange=function(e){
+  var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){
+    var n=niceName(f.name); state.files[n]=String(r.result); state.order.push(n);
+    openFile(n); drawFiles();
+  };
+  r.readAsText(f); e.target.value="";
+};
+
+async function addWheel(file){
+  if(!ready){ print("python is still starting","sys"); return; }
+  var buf=new Uint8Array(await file.arrayBuffer());
+  var b64=toB64(buf);
+  $("term").classList.remove("hide"); setBusy(true);
+  try{
+    await call("wheel",{name:file.name,b64:b64});
+    if(buf.length<3000000) keepWheel(file.name,b64);
+    else print("too big to remember between sessions, drop it in again next time","sys");
+    remember(file.name);
+  }catch(e){ print("wheel failed: "+(e.message||e),"err"); }
+  setBusy(false); drawPkgs();
+}
+$("whladd").onclick=function(){ $("whlpick").click(); };
+$("whlpick").onchange=function(e){
+  var fs=Array.prototype.slice.call(e.target.files);
+  fs.forEach(addWheel); e.target.value="";
+};
+["dragover","drop"].forEach(function(ev){
+  addEventListener(ev,function(e){
+    e.preventDefault();
+    if(ev!=="drop") return;
+    Array.prototype.slice.call(e.dataTransfer.files).forEach(function(f){
+      if(/\.whl$/i.test(f.name)) return addWheel(f);
+      var r=new FileReader();
+      r.onload=function(){
+        var n=niceName(f.name); state.files[n]=String(r.result); state.order.push(n);
+        openFile(n); drawFiles();
+      };
+      r.readAsText(f);
+    });
+  });
+});
+
+function download(name,data){
+  var blob = typeof data==="string" ? new Blob([data],{type:"text/plain"}) : new Blob([data]);
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
+}
+
+/* ---------------- workspace ---------------- */
+async function drawWork(){
+  var w=$("worklist");
+  if(!ready){ w.innerHTML='<div class="hint">waiting for python</div>'; return; }
+  var items=[];
+  try{ items=await call("tree"); }catch(e){ return; }
+  items=items.filter(function(f){ return !f.dir; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  w.innerHTML="";
+  if(!items.length){ w.innerHTML='<div class="hint">nothing here yet</div>'; return; }
+  items.forEach(function(f){
+    var mine=state.files[f.name]!==undefined;
+    var row=document.createElement("div"); row.className="row";
+    var b=document.createElement("button"); b.className="nm"; b.textContent=f.name;
+    if(mine) b.style.color="#4d5769";
+    b.onclick=function(){ viewFile(f); };
+    var sz=document.createElement("span"); sz.className="sz"; sz.textContent=bytes(f.size);
+    var d=document.createElement("button"); d.className="ic"; d.textContent="↓"; d.title="Download";
+    d.onclick=async function(e){
+      e.stopPropagation();
+      var r=await call("read",f.name);
+      download(f.name.split("/").pop(), r.data);
+    };
+    row.appendChild(b); row.appendChild(sz); row.appendChild(d); w.appendChild(row);
+  });
+}
+
+async function viewFile(f){
+  var body=$("viewB"); body.innerHTML="";
+  $("viewT").textContent=f.name;
+  var r;
+  try{ r=await call("read",f.name); }catch(e){ body.textContent="cannot read this file"; }
+  var data=r?r.data:null;
+  if(data && /\.(png|jpe?g|gif|webp|svg)$/i.test(f.name)){
+    var img=new Image(); img.src=URL.createObjectURL(new Blob([data])); body.appendChild(img);
+  } else if(data){
+    var text=new TextDecoder("utf-8",{fatal:false}).decode(data);
+    var pre=document.createElement("pre");
+    pre.textContent=text.length>80000?text.slice(0,80000)+"\n\n… truncated":text;
+    body.appendChild(pre);
+  }
+  $("viewPv").style.display=previewable(f.name)?"block":"none";
+  $("viewPv").onclick=function(){
+    $("viewVeil").classList.remove("on");
+    preview(f.name, new TextDecoder().decode(data));
+  };
+  $("viewDl").onclick=function(){ download(f.name.split("/").pop(),data); };
+  $("viewCopy").onclick=function(){
+    var n=f.name.split("/").pop();
+    if(state.files[n]===undefined) state.order.push(n);
+    state.files[n]=new TextDecoder().decode(data);
+    openFile(n); drawFiles(); $("viewVeil").classList.remove("on"); tab("files");
+  };
+  $("viewVeil").classList.add("on");
+}
+$("viewX").onclick=function(){ $("viewVeil").classList.remove("on"); };
+$("clonebtn").onclick=function(){
+  ask("Clone repo","owner/repo",function(v){
+    var bits=v.split(/\s+/);
+    clone(bits[0],bits[1]||"");
+  });
+};
+$("pubbtn").onclick=function(){
+  var seed=state.here||(state.order[0]&&state.order[0].indexOf("/")>0?state.order[0].split("/")[0]:"my-project");
+  ask("Publish folder to GitHub", seed, function(v){
+    var bits=v.split(/\s+/);
+    var folder=bits[0];
+    ask("Repo name", folder.split("/").pop(), function(nm){
+      $("term").classList.remove("hide");
+      tin.value="";
+      submit("git create "+nm+" "+folder);
+    });
+  });
+};
+$("refresh").onclick=drawWork;
+$("wipe").onclick=async function(){
+  if(!ready) return;
+  if(!confirm("Delete every file on Python's disk? Saved editor files stay.")) return;
+  var items=await call("tree");
+  for(var i=items.length-1;i>=0;i--){ try{ await call("rm",items[i].name); }catch(e){} }
+  try{ window.storage.delete(WSKEY).catch(function(){}); }catch(e){}
+  drawWork(); print("workspace cleared","sys");
+};
+
+/* zip (store only) */
+var CRC=(function(){
+  var t=new Uint32Array(256);
+  for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; }
+  return t;
+})();
+function crc32(u8){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<u8.length;i++) c=CRC[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function zip(files){
+  var parts=[], central=[], offset=0, enc=new TextEncoder();
+  files.forEach(function(f){
+    var name=enc.encode(f.name), data=f.data, crc=crc32(data);
+    var lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true);
+    lh.setUint16(8,0,true); lh.setUint16(10,0,true); lh.setUint16(12,0x2821,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    var ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(8,0,true); ch.setUint16(10,0,true); ch.setUint16(12,0,true); ch.setUint16(14,0x2821,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    offset+=30+name.length+data.length;
+  });
+  var csize=central.reduce(function(a,b){ return a+b.length; },0);
+  var end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);
+  end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,csize,true); end.setUint32(16,offset,true);
+  return new Blob(parts.concat(central,[new Uint8Array(end.buffer)]),{type:"application/zip"});
+}
+$("zipall").onclick=async function(){
+  if(!ready) return;
+  var items=(await call("tree")).filter(function(f){ return !f.dir; });
+  if(!items.length){ print("nothing to zip","sys"); return; }
+  var got=await call("readmany",items.map(function(f){ return HOME+"/"+f.name; }));
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(zip(got)); a.download="workspace.zip"; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },5000);
+};
+
+/* ---------------- packages ---------------- */
+async function drawPkgs(){
+  var w=$("pkgwrap");
+  if(!ready){ w.innerHTML='<div class="hint">waiting for python</div>'; return; }
+  var built=[], pip=[];
+  try{ built=await call("packages"); }catch(e){}
+  try{ pip=await call("piplist"); }catch(e){}
+  w.innerHTML="";
+  if(pip.length){
+    var h1=document.createElement("div"); h1.className="eyebrow"; h1.style.padding="8px 4px 4px"; h1.textContent="Installed";
+    w.appendChild(h1);
+    pip.forEach(function(p){
+      var c=document.createElement("span"); c.className="chip pip"; c.textContent=p;
+      var x=document.createElement("button"); x.className="ic"; x.textContent="×"; x.title="Remove "+p;
+      x.onclick=async function(){
+        try{ await call("uninstall",p); }catch(e){ print("cannot remove "+p,"err"); }
+        forget(p); drawPkgs();
+      };
+      c.appendChild(x); w.appendChild(c);
+    });
+  }
+  var h2=document.createElement("div"); h2.className="eyebrow"; h2.style.padding="12px 4px 4px"; h2.textContent="Runtime";
+  w.appendChild(h2);
+  if(built.length) built.forEach(function(p){
+    var c=document.createElement("span"); c.className="chip"; c.textContent=p; w.appendChild(c);
+  });
+  else { var e2=document.createElement("div"); e2.className="hint"; e2.style.padding="4px"; e2.textContent="nothing loaded yet"; w.appendChild(e2); }
+}
+$("pkgadd").onclick=async function(){
+  var n=$("pkgname").value.trim(); if(!n||!ready) return;
+  $("term").classList.remove("hide"); setBusy(true);
+  try{ await call("install",n); remember(n); $("pkgname").value=""; }
+  catch(e){ print("install failed: "+(e.message||e),"err"); }
+  setBusy(false); drawPkgs();
+};
+$("pkgname").addEventListener("keydown",function(e){ if(e.key==="Enter") $("pkgadd").click(); });
+
+
+/* ---------- markdown ---------- */
+function mdHtml(src){
+  function esc(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  var fences=[];
+  src=String(src).replace(/\r\n/g,"\n").replace(/```(\w*)\n([\s\S]*?)```/g,function(m,lang,body){
+    fences.push('<pre><code>'+esc(body)+'</code></pre>');
+    return "\u0001"+(fences.length-1)+"\u0001";
+  });
+  function safeUrl(u, allowData){
+    u=String(u).replace(/[\u0000-\u001f\u007f]/g,"").trim();
+    if(/^[a-z0-9.+-]*script:/i.test(u)) return "#blocked";
+    if(/^(javascript|vbscript|file|blob):/i.test(u)) return "#blocked";
+    if(/^data:/i.test(u) && !(allowData && /^data:image\//i.test(u))) return "#blocked";
+    return u.replace(/"/g,"%22").replace(/'/g,"%27").replace(/</g,"%3C").replace(/>/g,"%3E");
+  }
+  function inline(t){
+    t=esc(t);
+    t=t.replace(/`([^`]+)`/g,"<code>$1</code>");
+    t=t.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g,function(m,alt,u){
+      return '<img alt="'+alt.replace(/"/g,"&quot;")+'" src="'+safeUrl(u,true)+'">';
+    });
+    t=t.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,function(m,txt,u){
+      return '<a href="'+safeUrl(u)+'" target="_blank" rel="noopener noreferrer">'+txt+"</a>";
+    });
+    t=t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+    t=t.replace(/(^|[\s(])\*([^*\n]+)\*/g,"$1<em>$2</em>");
+    t=t.replace(/(^|[\s(])_([^_\n]+)_/g,"$1<em>$2</em>");
+    t=t.replace(/~~([^~]+)~~/g,"<del>$1</del>");
+    return t;
+  }
+  var lines=src.split("\n"), out=[], list=null, para=[];
+  function flushPara(){ if(para.length){ out.push("<p>"+inline(para.join(" "))+"</p>"); para=[]; } }
+  function closeList(){ if(list){ out.push("</"+list+">"); list=null; } }
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i];
+    if(/^\u0001\d+\u0001$/.test(l.trim())){ flushPara(); closeList(); out.push(l.trim()); continue; }
+    if(!l.trim()){ flushPara(); closeList(); continue; }
+    var h=l.match(/^(#{1,6})\s+(.*)$/);
+    if(h){ flushPara(); closeList(); out.push("<h"+h[1].length+">"+inline(h[2])+"</h"+h[1].length+">"); continue; }
+    if(/^\s*([-*_])\1{2,}\s*$/.test(l)){ flushPara(); closeList(); out.push("<hr>"); continue; }
+    if(/^>\s?/.test(l)){ flushPara(); closeList(); out.push("<blockquote>"+inline(l.replace(/^>\s?/,""))+"</blockquote>"); continue; }
+    var ul=l.match(/^\s*[-*+]\s+(.*)$/), ol=l.match(/^\s*\d+[.)]\s+(.*)$/);
+    if(ul||ol){
+      flushPara();
+      var want=ul?"ul":"ol";
+      if(list&&list!==want) closeList();
+      if(!list){ list=want; out.push("<"+want+">"); }
+      out.push("<li>"+inline((ul||ol)[1])+"</li>");
+      continue;
+    }
+    closeList(); para.push(l.trim());
+  }
+  flushPara(); closeList();
+  var html=out.join("\n");
+  return html.replace(/\u0001(\d+)\u0001/g,function(m,i){ return fences[+i]; });
+}
+
+var MDCSS = "body{margin:0;padding:28px 30px 60px;background:#0f1420;color:#dae1ef;"
+ + "font:15px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;max-width:760px}"
+ + "h1,h2,h3,h4{line-height:1.25;margin:1.6em 0 .5em;font-weight:650}"
+ + "h1{font-size:1.9em;border-bottom:1px solid #2a3547;padding-bottom:.3em}h2{font-size:1.45em}h3{font-size:1.18em}"
+ + "a{color:#6fa5ff}code{background:#1a2231;padding:.15em .4em;border-radius:4px;font:.88em ui-monospace,Menlo,monospace;color:#7fd88f}"
+ + "pre{background:#131a27;border:1px solid #232d3e;border-radius:9px;padding:14px 16px;overflow:auto}"
+ + "pre code{background:none;padding:0;color:#dae1ef}"
+ + "blockquote{margin:1em 0;padding:.2em 0 .2em 14px;border-left:3px solid #3b4a63;color:#96a1b5}"
+ + "hr{border:0;border-top:1px solid #2a3547;margin:2em 0}"
+ + "img{max-width:100%;border-radius:8px}table{border-collapse:collapse}td,th{border:1px solid #2a3547;padding:6px 10px}"
+ + "ul,ol{padding-left:1.4em}li{margin:.25em 0}";
+
+/* ---------- previews ---------- */
+function mime(name){
+  var e=(name.split(".").pop()||"").toLowerCase();
+  return {png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",svg:"image/svg+xml",
+          ico:"image/x-icon",woff:"font/woff",woff2:"font/woff2",ttf:"font/ttf"}[e]||"application/octet-stream";
+}
+function joinPath(base,rel){
+  if(!base) return rel;
+  var parts=(base+"/"+rel).split("/"), st=[];
+  parts.forEach(function(x){ if(!x||x===".") return; if(x===".."){ st.pop(); return; } st.push(x); });
+  return st.join("/");
+}
+async function readWorkspace(path){
+  var r=await call("read",path);
+  return r.data;
+}
+async function inlineAssets(html, baseDir){
+  var jobs=[];
+  html=html.replace(/<link[^>]+href=["']([^"':]+?)["'][^>]*>/gi,function(m,href){
+    if(!/stylesheet/i.test(m)) return m;
+    var key="\u0002L"+jobs.length+"\u0002";
+    jobs.push({key:key,path:joinPath(baseDir,href),kind:"css"});
+    return key;
+  });
+  html=html.replace(/<script([^>]*)\ssrc=["']([^"':]+?)["']([^>]*)><\/script>/gi,function(m,a,src,b){
+    var key="\u0002J"+jobs.length+"\u0002";
+    jobs.push({key:key,path:joinPath(baseDir,src),kind:"js"});
+    return key;
+  });
+  html=html.replace(/(<img[^>]+src=)["']([^"':]+?)["']/gi,function(m,pre,src){
+    var key="\u0002I"+jobs.length+"\u0002";
+    jobs.push({key:key,path:joinPath(baseDir,src),kind:"img",pre:pre});
+    return key;
+  });
+  for(var i=0;i<jobs.length;i++){
+    var j=jobs[i], rep2="";
+    try{
+      var data=await readWorkspace(j.path);
+      if(j.kind==="css") rep2="<style>"+new TextDecoder().decode(data)+"</style>";
+      else if(j.kind==="js") rep2="<scr"+"ipt>"+new TextDecoder().decode(data)+"</scr"+"ipt>";
+      else rep2=j.pre+'"data:'+mime(j.path)+";base64,"+toB64(new Uint8Array(data))+'"';
+    }catch(e){ rep2 = j.kind==="img" ? j.pre+'""' : "<!-- missing "+j.path+" -->"; }
+    html=html.replace(j.key,rep2);
+  }
+  return html;
+}
+
+async function preview(name, text){
+  var lower=name.toLowerCase();
+  if(text===undefined || text===null){
+    if(state.files[name]!==undefined) text=state.files[name];
+    else text=new TextDecoder().decode(await readWorkspace(name));
+  }
+  var baseDir=name.indexOf("/")>0?name.slice(0,name.lastIndexOf("/")):"";
+  var doc;
+  if(/\.(md|markdown)$/.test(lower)){
+    var body=mdHtml(text);
+    body=await inlineAssets(body, baseDir);
+    doc="<!doctype html><meta charset='utf-8'><style>"+MDCSS+"</style>"+body;
+  } else {
+    doc=await inlineAssets(text, baseDir);
+  }
+  $("pvT").textContent=name;
+  var f=$("pvFrame");
+  f.srcdoc=doc;
+  $("pvVeil").classList.add("on");
+  /* Deliberately no "open in a real tab". A blob: url inherits this page's
+     origin, which would let a previewed file read the storage holding your
+     token. The sandboxed frame has an opaque origin and can reach nothing. */
+  $("pvOpen").onclick=function(){
+    var c=$("pvVeil").querySelector(".card");
+    var big=c.style.maxWidth==="none";
+    c.style.maxWidth=big?"900px":"none";
+    c.style.height=big?"90vh":"100vh";
+    c.style.maxHeight=big?"90vh":"100vh";
+    $("pvOpen").textContent=big?"Full screen":"Shrink";
+  };
+}
+$("pvX").onclick=function(){ $("pvVeil").classList.remove("on"); $("pvFrame").srcdoc=""; };
+
+function previewable(n){ return /\.(html?|md|markdown|svg)$/i.test(n||""); }
+function syncPreviewBtn(){ $("prev").style.display=previewable(state.active)?"block":"none"; }
+$("prev").onclick=function(){ save(); preview(state.active, code.value); };
+
+/* ---------------- editor ---------------- */
+var BUILTINS="abs|all|any|bool|bytes|dict|dir|divmod|enumerate|eval|filter|float|format|frozenset|getattr|hasattr|hash|hex|id|input|int|isinstance|issubclass|iter|len|list|map|max|min|next|object|oct|open|ord|chr|pow|print|range|repr|reversed|round|set|setattr|slice|sorted|str|sum|super|tuple|type|vars|zip|self|cls";
+var KEYWORDS="False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case";
+var RE=new RegExp('("""[\\s\\S]*?"""|\'\'\'[\\s\\S]*?\'\'\'|[frbu]{0,2}"(?:\\\\.|[^"\\\\\\n])*"|[frbu]{0,2}\'(?:\\\\.|[^\'\\\\\\n])*\'|#[^\\n]*|@\\w+|\\b(?:'+KEYWORDS+')\\b|\\b(?:'+BUILTINS+')\\b|\\b\\d+\\.?\\d*(?:[eE][+-]?\\d+)?\\b)','g');
+var BRE=new RegExp("^(?:"+BUILTINS+")$");
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function color(src){
+  var o="",last=0,m; RE.lastIndex=0;
+  while((m=RE.exec(src))!==null){
+    o+=esc(src.slice(last,m.index));
+    var t=m[0],c0=t[0],cls="k";
+    if(c0==="#") cls="c";
+    else if(c0==='"'||c0==="'"||/^[frbu]{1,2}["']/.test(t)) cls="s";
+    else if(c0==="@") cls="d";
+    else if(t.charCodeAt(0)>=48&&t.charCodeAt(0)<=57) cls="n";
+    else if(BRE.test(t)) cls="b";
+    o+='<span class="'+cls+'">'+esc(t)+"</span>";
+    last=m.index+t.length;
+  }
+  return o+esc(src.slice(last));
+}
+function paint(){
+  var v=code.value;
+  hi.innerHTML=color(v)+"\n";
+  var lines=v.split("\n").length,g="";
+  for(var i=1;i<=lines;i++) g+=i+"\n";
+  gut.textContent=g;
+  code.style.height="auto"; code.style.height=hi.scrollHeight+"px";
+  code.style.width=Math.max(scr.clientWidth,hi.scrollWidth)+"px";
+  $("stSize").textContent=bytes(v.length);
+  caret();
+}
+function caret(){
+  var s=code.selectionStart||0, b=code.value.slice(0,s);
+  $("stPos").textContent="Ln "+b.split("\n").length+", Col "+(s-(b.lastIndexOf("\n")+1)+1);
+}
+code.addEventListener("input",function(){ state.files[state.active]=code.value; paint(); queueSave(); });
+["keyup","click","select"].forEach(function(e){ code.addEventListener(e,caret); });
+scr.addEventListener("scroll",function(){ gut.style.transform="translateY("+(-scr.scrollTop)+"px)"; });
+
+function insert(t,back){
+  var s=code.selectionStart,e=code.selectionEnd;
+  code.setRangeText(t,s,e,"end");
+  if(back) code.selectionStart=code.selectionEnd=code.selectionEnd-back;
+  code.dispatchEvent(new Event("input"));
+}
+var PAIRS={"(":")","[":"]","{":"}","'":"'",'"':'"'};
+code.addEventListener("keydown",function(e){
+  if(e.key==="Tab"){ e.preventDefault(); insert("    "); return; }
+  if(e.key==="Enter"&&!e.metaKey&&!e.ctrlKey){
+    var s=code.selectionStart;
+    var ls=code.value.lastIndexOf("\n",s-1)+1;
+    var line=code.value.slice(ls,s);
+    var pad=(line.match(/^[ \t]*/)||[""])[0];
+    if(/:\s*$/.test(line)) pad+="    ";
+    e.preventDefault(); insert("\n"+pad); return;
+  }
+  if(PAIRS[e.key] && code.selectionStart===code.selectionEnd){
+    var nxt=code.value[code.selectionStart]||"";
+    if(!/[\w"']/.test(nxt)){ e.preventDefault(); insert(e.key+PAIRS[e.key],1); return; }
+  }
+  if((e.key===")"||e.key==="]"||e.key==="}")&&code.value[code.selectionStart]===e.key){
+    e.preventDefault(); code.selectionStart=code.selectionEnd=code.selectionStart+1; return;
+  }
+  if(e.key==="Backspace"&&code.selectionStart===code.selectionEnd){
+    var s2=code.selectionStart, before=code.value.slice(0,s2);
+    if(/ {4}$/.test(before)&&/^\s*$/.test(before.slice(before.lastIndexOf("\n")+1))){
+      e.preventDefault(); code.setRangeText("",s2-4,s2,"end"); code.dispatchEvent(new Event("input"));
+    }
+  }
+});
+
+function setFont(d){
+  state.font=Math.min(24,Math.max(10,state.font+d));
+  document.documentElement.style.setProperty("--fs",state.font+"px");
+  paint(); if(d) save();
+}
+
+
+/* ---------- find and replace ---------- */
+var findHits=[], findAt=-1;
+function findBar(on){
+  var f=$("find");
+  f.classList.toggle("on", on===undefined?!f.classList.contains("on"):on);
+  if(f.classList.contains("on")){
+    var sel=code.value.slice(code.selectionStart,code.selectionEnd);
+    if(sel && sel.length<80 && sel.indexOf("\n")<0) $("findI").value=sel;
+    $("findI").focus(); $("findI").select(); runFind();
+  } else { code.focus(); }
+  setTimeout(paint,30);
+}
+function runFind(){
+  var q=$("findI").value;
+  findHits=[]; findAt=-1;
+  if(q){
+    var hay=code.value.toLowerCase(), needle=q.toLowerCase(), i=0;
+    while((i=hay.indexOf(needle,i))>-1){ findHits.push(i); i+=needle.length||1; }
+  }
+  $("findN").textContent=findHits.length?("0/"+findHits.length):"none";
+}
+function gotoHit(step){
+  if(!findHits.length) return;
+  findAt=(findAt+step+findHits.length)%findHits.length;
+  var pos=findHits[findAt], len=$("findI").value.length;
+  code.focus();
+  code.setSelectionRange(pos,pos+len);
+  var line=code.value.slice(0,pos).split("\n").length;
+  var lh=state.font*1.55;
+  scr.scrollTop=Math.max(0,(line-4)*lh);
+  $("findN").textContent=(findAt+1)+"/"+findHits.length;
+}
+function replaceOne(){
+  if(findAt<0){ gotoHit(1); return; }
+  var q=$("findI").value;
+  if(!q) return;
+  var pos=code.selectionStart;
+  if(code.value.slice(pos,pos+q.length).toLowerCase()!==q.toLowerCase()){ gotoHit(1); return; }
+  code.setRangeText($("replI").value,pos,pos+q.length,"end");
+  code.dispatchEvent(new Event("input"));
+  runFind(); gotoHit(1);
+}
+function replaceAll(){
+  var q=$("findI").value; if(!q) return;
+  var r=$("replI").value, v=code.value, outp="", i=0, n=0;
+  var hay=v.toLowerCase(), needle=q.toLowerCase(), at;
+  while((at=hay.indexOf(needle,i))>-1){ outp+=v.slice(i,at)+r; i=at+needle.length; n++; }
+  outp+=v.slice(i);
+  code.value=outp; code.dispatchEvent(new Event("input"));
+  runFind();
+  $("findN").textContent=n+" replaced";
+}
+$("findI").addEventListener("input",runFind);
+$("findI").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){ e.preventDefault(); gotoHit(e.shiftKey?-1:1); }
+  if(e.key==="Escape"){ e.preventDefault(); findBar(false); }
+});
+$("replI").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){ e.preventDefault(); replaceOne(); }
+  if(e.key==="Escape"){ e.preventDefault(); findBar(false); }
+});
+$("findNx").onclick=function(){ gotoHit(1); };
+$("findP").onclick=function(){ gotoHit(-1); };
+$("findR").onclick=replaceOne;
+$("findA").onclick=replaceAll;
+$("findX").onclick=function(){ findBar(false); };
+
+/* ---------------- panels + shortcuts ---------------- */
+function tab(name){
+  document.querySelectorAll("#tabs button").forEach(function(b){ b.classList.toggle("on",b.dataset.p===name); });
+  document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("on",p.id==="p-"+name); });
+  $("footFiles").style.display=name==="files"?"flex":"none";
+  $("footWork").style.display=name==="work"?"flex":"none";
+  if(name==="work") drawWork();
+  if(name==="pkgs") drawPkgs();
+}
+$("tabs").addEventListener("click",function(e){ var b=e.target.closest("button"); if(b) tab(b.dataset.p); });
+
+function rail(show){
+  var r=$("rail");
+  var hide=show===undefined?!r.classList.contains("hide"):!show;
+  r.classList.toggle("hide",hide); $("tRail").classList.toggle("on",!hide);
+  setTimeout(paint,40);
+}
+$("tRail").onclick=function(){ rail(); };
+$("tTerm").onclick=function(){
+  var t=$("term"); t.classList.toggle("hide");
+  $("tTerm").classList.toggle("on",!t.classList.contains("hide"));
+  if(!t.classList.contains("hide")) tin.focus();
+  setTimeout(paint,40);
+};
+
+(function(){
+  var g=$("grip"), t=$("term"), y0=0, h0=0;
+  g.addEventListener("pointerdown",function(e){ g.setPointerCapture(e.pointerId); y0=e.clientY; h0=t.getBoundingClientRect().height; });
+  g.addEventListener("pointermove",function(e){
+    if(!g.hasPointerCapture(e.pointerId)) return;
+    var h=Math.min(innerHeight*.85,Math.max(70,h0-(e.clientY-y0)));
+    t.style.height=h+"px"; state.termH=Math.round(h/innerHeight*100);
+  });
+  g.addEventListener("pointerup",function(){ paint(); save(); });
+})();
+
+document.addEventListener("keydown",function(e){
+  var mod=e.metaKey||e.ctrlKey;
+  if(!mod) return;
+  var k=e.key.toLowerCase();
+  if(k==="enter"){ e.preventDefault(); runFile(state.active); }
+  else if(k==="s"){ e.preventDefault(); save(); }
+  else if(k==="b"){ e.preventDefault(); rail(); }
+  else if(k==="j"){ e.preventDefault(); $("tTerm").click(); }
+  else if(k==="k"){ e.preventDefault(); tbody.textContent=""; }
+  else if(k==="n"){ e.preventDefault(); $("newf").click(); }
+  else if(k==="f"){ e.preventDefault(); findBar(true); }
+  else if(k==="p"&&previewable(state.active)){ e.preventDefault(); $("prev").click(); }
+  else if(k==="g"){ e.preventDefault(); gotoHit(e.shiftKey?-1:1); }
+  else if(k==="="||k==="+"){ e.preventDefault(); setFont(1); }
+  else if(k==="-"){ e.preventDefault(); setFont(-1); }
+});
+document.addEventListener("keydown",function(e){ if(e.key==="Escape") document.querySelectorAll(".veil.on").forEach(function(v){ v.classList.remove("on"); }); });
+document.querySelectorAll(".veil").forEach(function(v){ v.addEventListener("click",function(e){ if(e.target===v) v.classList.remove("on"); }); });
+
+addEventListener("resize",function(){ setTimeout(paint,50); });
+addEventListener("beforeunload",save);
+document.addEventListener("visibilitychange",function(){ if(document.hidden){ save(); saveWorkspace(); } });
+
+/* ---------------- go ---------------- */
+lamp.className="busy";
+print("type help for commands","sys");
+setTimeout(function(){
+  var st=window.OFFLINE_STATE||{};
+  if(!st.ok){
+    print("offline caching is off: "+st.why,"err");
+    print("type  offline  for what to do about it","sys");
+  }
+},1500);
+prompt();
+loadToken().then(loadUser);
+loadState().then(spawn);
+if(innerWidth<820) rail(false);
+})();
+</script>
+</body>
+</html>

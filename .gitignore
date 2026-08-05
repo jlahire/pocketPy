@@ -1,0 +1,10 @@
+
+pyodide/
+*.tar.bz2
+.env
+.env.*
+*.whl
+prewarm-report.txt
+__pycache__/
+*.pyc
+.DS_Store
